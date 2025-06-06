@@ -45,9 +45,9 @@ class CommandRunner {
   void printGlobalUsage() {
     print('Usage: bullseye2d <command> [options]\n');
     print('Available commands:');
-      _commands.forEach((name, command) {
-        print('  ${name.padRight(15)} ${command.description}');
-      });
+    _commands.forEach((name, command) {
+      print('  ${name.padRight(15)} ${command.description}');
+    });
     print('\nRun `bullseye2d <command> --help` for more information on a specific command.');
   }
 }

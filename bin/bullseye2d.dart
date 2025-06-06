@@ -6,4 +6,3 @@ Future<void> main(List<String> arguments) async {
   runner.registerCommand(CreateCommand());
   await runner.run(arguments);
 }
-
