@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bullseye2D - Demos</title>
+    <script defer src="main.dart.js"></script>
+    <style>
+    :root{--bg-gradient-start:#23272a;--bg-gradient-end:#1e2124;--text-color:#dcddde;--heading-color:#ffffff;--link-color:#7289da;--link-hover-bg:#7289da;--link-hover-text:#ffffff;--separator-color:#606770;--canvas-border-color:#40444b;--font-family-main:"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";--font-family-headings:"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif}*,*::after,*::before{box-sizing:border-box}html{height:100%}body{margin:0;padding:5px 5px 40px;font-family:var(--font-family-main);font-weight:400;background-color:var(--bg-gradient-end);background-image:linear-gradient( 135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100% );background-repeat:no-repeat;background-attachment:fixed;color:var(--text-color);line-height:1.6;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}.container{width:100%;max-width:800px;text-align:center;padding:30px 35px;background-color:transparent;border-radius:12px}h1{color:var(--heading-color);font-family:var(--font-family-headings);font-size:2.8em;margin-top:0;margin-bottom:0.7em;font-weight:700}nav ul{list-style-type:none;padding:0;margin:25px 0 35px;display:flex;justify-content:center;align-items:center;flex-wrap:wrap}nav li{margin:5px 0}nav li a{text-decoration:none;color:var(--link-color);font-size:1.1em;font-weight:500;padding:6px 10px;border-radius:5px;transition:background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;display:inline-block}nav li a:focus,nav li a:hover{background-color:var(--link-hover-bg);color:var(--link-hover-text);transform:translateY(-2px);outline:none}nav li a.active{background-color:var(--link-hover-bg);color:var(--link-hover-text)}nav li:not(:last-child)::after{content:"•";color:var(--separator-color);margin:0 10px;font-size:0.9em;pointer-events:none}#gameCanvas{display:block;width:100%;max-width:640px;aspect-ratio:16 / 9;margin:20px auto 0;border:1px solid var(--canvas-border-color);border-radius:8px}@media (max-width: 768px){.container{padding:25px 20px}h1{font-size:2.4em}}@media (max-width: 600px){body{padding:15px}.container{padding:20px 15px}h1{font-size:2.1em}nav ul{flex-direction:column}nav li:not(:last-child)::after{display:none}nav li a{display:block;margin-bottom:8px;width:100%;padding:8px 12px}nav li a:focus,nav li a:hover{transform:none}}
+    </style>
+  </head>
+  <body style="background-color: #fff">
+    <div class="container">
+      <h1>Bullseye2D - Demos</h1>
+      <nav>
+        <ul>
+          <li><a href="?app=hello_world">Hello World</a></li>
+          <li><a href="?app=sprites">Sprites</a></li>
+          <li><a href="?app=music_player">Music Player</a></li>
+          <li><a href="?app=input">Input Demo</a></li>
+        </ul>
+      </nav>
+      <canvas id="gameCanvas" tabindex="1" width="1280" height="720"></canvas>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const params = new URLSearchParams(window.location.search);
+        const currentApp = params.get("app");
+        if (currentApp) {
+          const navLinks = document.querySelectorAll("nav li a");
+          const targetHref = "?app=" + currentApp;
+          navLinks.forEach((link) => {
+            if (link.getAttribute("href") === targetHref) {
+              link.classList.add("active");
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

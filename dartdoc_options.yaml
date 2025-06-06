@@ -1,0 +1,47 @@
+dartdoc:
+  categories:
+    "Features":
+      markdown: doc/guides/Features.md
+      displayName: "Features"
+    "Getting_Started":
+      markdown: doc/guides/Getting-Started.md
+      displayName: "Getting Started"
+    "Cheatsheet":
+      markdown: doc/guides/Cheatsheet.md
+      displayName: "Cheatsheet"
+    "TutorialFirstApp":
+      markdown: doc/guides/tutorials/First-App.md
+      displayName: "My first App"
+    "Core_Systems":
+      markdown: doc/guides/CoreSystems.md
+      displayName: "Core Systems"
+    "App":
+      markdown: doc/guides/App.md
+    "Audio":
+      markdown: doc/guides/Audio.md
+    "Graphics":
+      markdown: doc/guides/Graphics.md
+    "IO":
+      markdown: doc/guides/IO.md
+    "Utility":
+      markdown: doc/guides/Utility.md
+    "Input":
+      markdown: doc/guides/Input.md
+    "Debug":
+      markdown: doc/guides/Debug.md
+  categoryOrder: ["Features", "Getting Started", "My first App", "Cheatsheet", "App", "Audio", "Core Systems", "Input", "Graphics", "IO", "Utility", "Debug"]
+  showUndocumentedCategories: true
+  errors:
+    - unresolved-doc-reference
+    - ambiguous-doc-reference
+  warnings:
+    - tool-error
+  exclude:
+    - 'package:bullseye2d/commands/command.dart'
+    - 'package:bullseye2d/commands/command_runner.dart'
+    - 'package:bullseye2d/commands/commands.dart'
+    - 'package:bullseye2d/commands/create_command.dart'
+    - 'package:bullseye2d/commands/docs_command.dart'
+    - 'package:bullseye2d/commands/examples_command.dart'
+  header:
+    - "doc/html/header.html"

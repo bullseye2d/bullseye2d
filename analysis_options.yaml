@@ -18,10 +18,17 @@ include: package:lints/recommended.yaml
 # linter:
 #   rules:
 #     - camel_case_types
+linter:
+  rules:
+    camel_case_types: true
 
-# analyzer:
-#   exclude:
-#     - path/to/excluded/files/**
+formatter:
+  page_width: 120
+
+analyzer:
+  exclude:
+    - lib/js_api.dart
+    - tools/template/main.dart
 
 # For more information about the core and recommended set of lints, see
 # https://dart.dev/go/core-lints

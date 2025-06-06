@@ -5,3 +5,27 @@
 # Avoid committing pubspec.lock for library packages; see
 # https://dart.dev/guides/libraries/private-files#pubspeclock.
 pubspec.lock
+
+.rgignore
+
+build/
+
+examples/.dart_tool/
+examples/.packages
+examples/build/
+examples/pubspec.lock
+
+.DS_Store
+Thumbs.db
+
+*~
+*.swp
+*.swo
+
+*.Zone.Identifier
+
+/pack.sh
+/lib/js_api.dart
+
+/doc/api
+

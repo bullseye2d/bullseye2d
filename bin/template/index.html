@@ -1,0 +1,24 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bullseye2D - {APP_NAME}</title>
+    <script defer src="main.dart.js"></script>
+<style>
+:root { --bg-gradient-start: #23272a; --bg-gradient-end: #1e2124; --text-color: #dcddde; --heading-color: #ffffff; --link-color: #7289da; --link-hover-bg: #7289da; --link-hover-text: #ffffff; --separator-color: #606770; --canvas-border-color: #40444b; }
+*, *::before, *::after { box-sizing: border-box; }
+html { height: 100%; }
+body { margin: 0; padding: 5px 5px 40px 5px; background-color: var(--bg-gradient-end); background-image: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%); background-repeat: no-repeat; background-attachment: fixed; color: var(--text-color); line-height: 1.6; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+.container { width: 100%; max-width: 1920px; text-align: center; padding: 30px 35px; background-color: transparent; border-radius: 12px; }
+#gameCanvas { display: block; width: 100%; aspect-ratio: 16 / 9; margin: 20px auto 0 auto; border: 1px solid var(--canvas-border-color); border-radius: 8px; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <canvas id="gameCanvas" tabindex=1 width="1280" height="720"></canvas>
+  </div>
+</body>
+</html>
