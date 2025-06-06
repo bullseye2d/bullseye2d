@@ -1,6 +1,10 @@
+## 1.0.4
+
+- Added `View source code` button to demo page.
+
 ## 1.0.3
 
-- Remove `example` command. It was a bad idea in the first place, because the way I've implemented it assumes it could be run from local dart cache and dart doesn't like this (for good reasons). So now I removed the command for now.
+- Remove `example` command. It was a bad idea in the first place, because the way I've implemented it assumes it could be run from local dart cache and dart doesn't like this (for good reasons). So I removed the command for now.
 
 ## 1.0.2
 

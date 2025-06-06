@@ -32,7 +32,7 @@ dart pub global activate bullseye2d
 
 # Examples
 
-To run the examples you have the clone the directory.
+To run the examples you have the clone the repository.
 
 ```bash
 git clone git@github.com:bullseye2d/bullseye2d.git
