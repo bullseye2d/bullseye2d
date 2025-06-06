@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 import 'package:args/args.dart';
+import 'package:path/path.dart' as p;
 
 abstract class Command {
   ArgParser get parser;
@@ -39,7 +41,6 @@ abstract class Command {
     if (dir.existsSync()) {
       try {
         dir.deleteSync(recursive: true);
-        print('Successfully deleted directory: $path.');
       } catch (e) {
         print('Error deleting directory $path: $e');
         exit(1);
@@ -54,7 +55,7 @@ abstract class Command {
     String executable,
     List<String> processArgs, {
     String? workingDirectory,
-    bool verbose = false
+    bool verbose = false,
   }) async {
     final commandString = '$executable ${processArgs.join(' ')}';
     final wdString = workingDirectory != null ? ' in $workingDirectory' : '';
@@ -63,11 +64,7 @@ abstract class Command {
       print('Running command: $commandString$wdString');
     }
 
-    final processResult = await Process.run(
-      executable,
-      processArgs,
-      workingDirectory: workingDirectory,
-    );
+    final processResult = await Process.run(executable, processArgs, workingDirectory: workingDirectory);
 
     if (processResult.exitCode != 0) {
       print('Error running command: $commandString$wdString (Exit code: ${processResult.exitCode})');
@@ -90,6 +87,15 @@ abstract class Command {
       }
     }
     return processResult;
+  }
+
+  String getPackageRoot() {
+    final selfPackageUri = Uri.parse('package:bullseye2d/bullseye2d.dart');
+    final resolvedUri = Isolate.resolvePackageUriSync(selfPackageUri);
+    if (resolvedUri == null) {
+      throw StateError('Could not resolve package URI for bullseye2d. Make sure the package is correctly installed.');
+    }
+    return p.dirname(p.dirname(resolvedUri.toFilePath()));
   }
 
   /// Prints the usage information for this specific command.

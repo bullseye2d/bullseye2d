@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'command.dart';
 
-
 class CommandRunner {
   final Map<String, Command> _commands = {};
 

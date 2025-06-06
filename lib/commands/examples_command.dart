@@ -11,7 +11,7 @@ class ExamplesCommand extends Command {
   @override
   String get description => 'Builds and serves the example projects.\n';
 
-  static const String _examplesDir = 'example';
+  static const String _examplesDirName = 'example';
   static const String _ansiErrorHighlight = '\x1b[41;97m';
   static const String _ansiSuccessHighlight = '\x1b[92m';
   static const String _ansiReset = '\x1b[0m';
@@ -53,18 +53,25 @@ class ExamplesCommand extends Command {
     final String hostname = argResults['hostname'] as String;
     final String defaultPort = argResults['port'] as String;
     final bool highlightOutput = argResults['highlight'] as bool;
+    final String packageRootPath = getPackageRoot();
+    final String examplesDirPath = p.join(packageRootPath, _examplesDirName);
 
-    if (!Directory(_examplesDir).existsSync()) {
-      print('Error: Directory "$_examplesDir" not found.');
-      print('This command expects to be run from the project root, and for an "$_examplesDir" subdirectory to exist.');
+    if (!Directory(examplesDirPath).existsSync()) {
+      print('Error: Directory "$examplesDirPath" not found.');
+      print(
+        'This command expects to be run from the project root, and for an "$_examplesDirName" subdirectory to exist.',
+      );
       exit(1);
     }
 
-    if (!File(p.join(_examplesDir, 'pubspec.yaml')).existsSync()) {
-      print('Error: "$_examplesDir/pubspec.yaml" not found.');
-      print('Ensure "$_examplesDir" is a valid Dart package and run "dart pub get" within it if necessary.');
+    if (!File(p.join(examplesDirPath, 'pubspec.yaml')).existsSync()) {
+      print('Error: "$examplesDirPath/pubspec.yaml" not found.');
+      print('Ensure "$_examplesDirName" is a valid Dart package and run "dart pub get" within it if necessary.');
       exit(1);
     }
+
+    await runProcess(Platform.executable, ['pub', 'get'], workingDirectory: examplesDirPath, verbose: false);
+    print('[✓] Dependencies fetched for examples.');
 
     List<String> dartVmArgs = [];
     if (vmServicePort.isNotEmpty && int.tryParse(vmServicePort) != null) {
@@ -88,12 +95,12 @@ class ExamplesCommand extends Command {
     final String executable = Platform.executable; // dart
     final List<String> processArgs = [...dartVmArgs, 'run', 'build_runner', ...buildRunnerCommandArgs];
 
-    print('Executing in directory "$_examplesDir": $executable ${processArgs.join(' ')}\n');
+    print('Executing in directory "$examplesDirPath": $executable ${processArgs.join(' ')}\n');
 
     final process = await Process.start(
       executable,
       processArgs,
-      workingDirectory: _examplesDir,
+      workingDirectory: examplesDirPath,
       runInShell: Platform.isWindows,
       mode: ProcessStartMode.normal,
     );
@@ -150,10 +157,7 @@ class ExamplesCommand extends Command {
 
     final exitCode = await process.exitCode;
 
-    await Future.wait([
-      stdoutCompleter.future.catchError((_) {}),
-      stderrCompleter.future.catchError((_) {}),
-    ]);
+    await Future.wait([stdoutCompleter.future.catchError((_) {}), stderrCompleter.future.catchError((_) {})]);
 
     await sigintSubscription.cancel();
 

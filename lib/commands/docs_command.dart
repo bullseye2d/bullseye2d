@@ -37,8 +37,6 @@ class DocsCommand extends Command {
 
     print('Cleaning old documentation at $_docApiDir...');
     deleteDirectory(_docApiDir);
-    print('Successfully removed old documentation from $_docApiDir.');
-
 
     print('Generating API documentation...');
     await runProcess(

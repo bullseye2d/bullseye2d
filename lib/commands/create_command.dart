@@ -1,6 +1,5 @@
-import 'dart:isolate';
-import 'package:path/path.dart' as p;
 import 'package:bullseye2d/commands/commands.dart';
+import 'package:path/path.dart' as p;
 
 class CreateCommand extends Command {
   @override
@@ -34,15 +33,6 @@ class CreateCommand extends Command {
               .map((part) => part[0].toUpperCase() + part.substring(1))
               .join('');
 
-  Future<String> _getPackageRoot() async {
-    final selfPackageUri = Uri.parse('package:bullseye2d/bullseye2d.dart');
-    final resolvedUri = await Isolate.resolvePackageUri(selfPackageUri);
-    if (resolvedUri == null) {
-      throw StateError('Could not resolve package URI for bullseye2d. Make sure the package is correctly installed.');
-    }
-    return p.dirname(p.dirname(resolvedUri.toFilePath()));
-  }
-
   void _printWebdevWarning(String advice, String details) {
     print('\n******************************************************************************');
     print('[!] WARNING: Could not confirm webdev is available or working correctly.');
@@ -66,7 +56,7 @@ class CreateCommand extends Command {
     }
     final projectLocationInput = argResults.rest.first;
 
-    final String bullseyeRootPath = await _getPackageRoot();
+    final String bullseyeRootPath = getPackageRoot();
 
     final projectAbsolutePath = p.canonicalize(p.join(Directory.current.path, projectLocationInput));
     final projectNameSnakeCase = p.basename(projectAbsolutePath);
