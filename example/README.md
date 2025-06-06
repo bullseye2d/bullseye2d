@@ -2,7 +2,7 @@
 
 Bullseye2D comes with a few demos and examples. Feel free to enjoy them and checkout the source to learn from.
 
-You can either explore them on our website at [**https://bullseye2d.org/demos**](https://bullseye2d.org/demos) or you can run them locally:
+You can either explore them on our website at [bullseye2d.org/demos](https://bullseye2d.org/demos) or you can run them locally:
 
 ## Clone the Repository:
 
