@@ -4,7 +4,6 @@ Future<void> main(List<String> arguments) async {
   final runner = CommandRunner();
   runner.registerCommand(DocsCommand());
   runner.registerCommand(CreateCommand());
-  runner.registerCommand(ExamplesCommand());
   await runner.run(arguments);
 }
 

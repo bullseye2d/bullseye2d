@@ -32,11 +32,17 @@ dart pub global activate bullseye2d
 
 # Examples
 
-Use the following command to build the example/demo app and serve it on localhost:8080. **NOTE:** I'm still working on providing more complex examples. Stay tuned! 
+To run the examples you have the clone the directory.
 
 ```bash
-bullseye2d examples
+git clone git@github.com:bullseye2d/bullseye2d.git
+cd bullseye2d
+cd example
+dart pub get
+webdev serve
 ```
+
+You can also enjoy the demos on our [website](https://bullseye2d.org/demos).
 
 You can have a look at the source code of the examples [here](https://github.com/bullseye2d/bullseye2d.org/blob/main/example/web).
 

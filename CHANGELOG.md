@@ -1,3 +1,7 @@
+## 1.0.3
+
+- Remove `example` command. It was a bad idea in the first place, because the way I've implemented it assumes it could be run from local dart cache and dart doesn't like this (for good reasons). So now I removed the command for now.
+
 ## 1.0.2
 
 - Fixes `Cannot operate on packages inside the cache.` error on `example` command.
