@@ -33,4 +33,3 @@ void main() {
     out_color = vec4(tex_color.rgb * tex_color.a, tex_color.a);
 }
 ''';
-

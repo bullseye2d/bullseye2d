@@ -16,5 +16,3 @@ class RenderBatchState {
   final viewport = Rect<int>();
   final scissor = Rect<int>();
 }
-
-

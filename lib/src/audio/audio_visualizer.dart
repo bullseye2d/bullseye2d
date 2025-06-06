@@ -69,6 +69,7 @@ class AudioVisualizer {
     void w() {
       warn('Invalid fftSize. Must be power of 2 between 32 and 32768.');
     }
+
     if ((size & (size - 1)) != 0) {
       w();
       size = nextPowerOfTwo(size);

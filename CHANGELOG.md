@@ -1,3 +1,11 @@
+## 1.0.6
+
+- Formatted dart code. 
+
+## 1.0.5
+
+- Readme page for example added
+
 ## 1.0.4
 
 - Added `View source code` button to demo page.

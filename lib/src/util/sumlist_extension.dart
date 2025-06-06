@@ -5,7 +5,7 @@ extension SumListExtension on List<num> {
   ///
   /// Returns 0 if the list is empty.
   num sum() {
-      return fold(0, (sum, element) => sum + element);
+    return fold(0, (sum, element) => sum + element);
   }
 
   /// Calculates the average (mean) of all numbers in the list.
@@ -15,4 +15,3 @@ extension SumListExtension on List<num> {
     return (length > 0) ? sum() / length.toDouble() : 0.0;
   }
 }
-

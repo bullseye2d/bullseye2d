@@ -1,4 +1,3 @@
-
 /// {@category Utility}
 /// Represents a rectangle defined by a top-left corner [left], [top]
 /// and a [width] and [height].

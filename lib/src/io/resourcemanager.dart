@@ -74,13 +74,28 @@ class ResourceManager {
   ///   image (and its frames) has finished loading and processing.
   ///
   /// Returns an [Images] list.
-  Images loadImage(String path, {int frameWidth = 0, int frameHeight = 0, int paddingX = 0, int paddingY = 0, int textureFlags = TextureFlags.defaultFlags, double pivotX = 0.5, double pivotY = 0.5, void Function()? onLoad}) {
+  Images loadImage(
+    String path, {
+    int frameWidth = 0,
+    int frameHeight = 0,
+    int paddingX = 0,
+    int paddingY = 0,
+    int textureFlags = TextureFlags.defaultFlags,
+    double pivotX = 0.5,
+    double pivotY = 0.5,
+    void Function()? onLoad,
+  }) {
     Images result = [];
 
     var texture = loadTexture(path, textureFlags);
 
     if (frameWidth == 0 && frameHeight == 0) {
-      var image = Image(texture: texture, sourceRect: Rect(0, 0, texture.width, texture.height), pivotX: pivotX, pivotY: pivotY);
+      var image = Image(
+        texture: texture,
+        sourceRect: Rect(0, 0, texture.width, texture.height),
+        pivotX: pivotX,
+        pivotY: pivotY,
+      );
       texture.dispose();
 
       texture.onLoad((Texture texture) {
@@ -91,7 +106,17 @@ class ResourceManager {
       result.add(image);
     } else {
       texture.onLoad((Texture texture) {
-        result.addAll(Image.loadFrames(texture: texture, frameWidth: frameWidth, frameHeight: frameHeight, paddingX: paddingX, paddingY: paddingY, pivotX: pivotX, pivotY: pivotY));
+        result.addAll(
+          Image.loadFrames(
+            texture: texture,
+            frameWidth: frameWidth,
+            frameHeight: frameHeight,
+            paddingX: paddingX,
+            paddingY: paddingY,
+            pivotX: pivotX,
+            pivotY: pivotY,
+          ),
+        );
         onLoad?.call();
       });
     }
@@ -108,7 +133,12 @@ class ResourceManager {
   ///   font atlas. Defaults to [BitmapFont.extendedAscii].
   ///
   /// Returns the loaded or cached [BitmapFont].
-  BitmapFont loadFont(String path, double size, {bool antiAlias = true, String containedAsciiCharacters = BitmapFont.extendedAscii}) {
+  BitmapFont loadFont(
+    String path,
+    double size, {
+    bool antiAlias = true,
+    String containedAsciiCharacters = BitmapFont.extendedAscii,
+  }) {
     var font = BitmapFont(_gl);
 
     var fontName = path.replaceAll("/", "").replaceAll(".", "");
@@ -151,9 +181,10 @@ class ResourceManager {
   ///
   /// Returns the [Sound] object, which will asynchronously load the audio data.
   Sound loadSound(String path, {int retriggerDelayInMs = 0}) {
-    var sound = Sound()
-      ..retriggerDelay = Duration(milliseconds: retriggerDelayInMs)
-      ..loadFromFile(path, _loadingInfo, _audio.audioContext);
+    var sound =
+        Sound()
+          ..retriggerDelay = Duration(milliseconds: retriggerDelayInMs)
+          ..loadFromFile(path, _loadingInfo, _audio.audioContext);
 
     return sound;
   }

@@ -13,7 +13,6 @@ typedef ColorList = List<Color>;
 /// {@category Graphics}
 /// Provides utility methods for [Color] (Vector4) objects.
 extension ColorExtension on Color {
-
   /// Converts this [Color] to a 32-bit unsigned integer representation (ABGR).
   ///
   /// For example, opaque red (1.0, 0.0, 0.0, 1.0) would become `0xFFFF0000`.
@@ -22,7 +21,10 @@ extension ColorExtension on Color {
   /// Returns:
   ///   An integer representing the color in ABGR format.
   int toUint8() {
-    return (((a.clamp(0.0, 1.0) * 255).round().toInt() & 0xFF) << 24 | ((b.clamp(0.0, 1.0) * 255).round().toInt() & 0xFF) << 16 | ((g.clamp(0.0, 1.0) * 255).round().toInt() & 0xFF) << 8 | ((r.clamp(0.0, 1.0) * 255).round().toInt() & 0xFF) << 0);
+    return (((a.clamp(0.0, 1.0) * 255).round().toInt() & 0xFF) << 24 |
+        ((b.clamp(0.0, 1.0) * 255).round().toInt() & 0xFF) << 16 |
+        ((g.clamp(0.0, 1.0) * 255).round().toInt() & 0xFF) << 8 |
+        ((r.clamp(0.0, 1.0) * 255).round().toInt() & 0xFF) << 0);
   }
 }
 

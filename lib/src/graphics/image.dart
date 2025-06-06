@@ -114,7 +114,15 @@ class Image {
   /// texture has finished loading.
   ///
   /// Returns an [Images] list (a `List<Image>`) containing all extracted frames.
-  static Images loadFrames({required Texture texture, required int frameWidth, required int frameHeight, int paddingX = 0, int paddingY = 0, double pivotX = 0.5, double pivotY = 0.5}) {
+  static Images loadFrames({
+    required Texture texture,
+    required int frameWidth,
+    required int frameHeight,
+    int paddingX = 0,
+    int paddingY = 0,
+    double pivotX = 0.5,
+    double pivotY = 0.5,
+  }) {
     final Images images = [];
 
     grabFrames(Texture texture) {

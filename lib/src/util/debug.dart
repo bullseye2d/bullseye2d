@@ -141,7 +141,13 @@ _log(List arguments, [_Verbosity verbosity = _Verbosity.nothing]) {
     final trace = StackTrace.current;
     final traceString = trace.toString();
     final lines = traceString.split('\n');
-    var stacktrace = (lines.length < 5) ? '' : lines[4].replaceAllMapped(RegExp(r'^(.+?)\s(\d+):.*'), (match) => '[${match.group(1)!}:${match.group(2)!}]');
+    var stacktrace =
+        (lines.length < 5)
+            ? ''
+            : lines[4].replaceAllMapped(
+              RegExp(r'^(.+?)\s(\d+):.*'),
+              (match) => '[${match.group(1)!}:${match.group(2)!}]',
+            );
     if (stacktrace != "") {
       stacktrace = stacktrace.replaceFirst('bullseye/src/', '');
       arguments = ['$stacktrace :: ', ...arguments];
@@ -189,7 +195,13 @@ _log(List arguments, [_Verbosity verbosity = _Verbosity.nothing]) {
     }
   }
 
-  bool onlyPermanentTagPush = extractedTags.isNotEmpty && firstArgStringContent.trim().isEmpty && remainingArgs.isEmpty && !isTemporary && arguments.length == 1 && arguments[0] is String;
+  bool onlyPermanentTagPush =
+      extractedTags.isNotEmpty &&
+      firstArgStringContent.trim().isEmpty &&
+      remainingArgs.isEmpty &&
+      !isTemporary &&
+      arguments.length == 1 &&
+      arguments[0] is String;
 
   if (onlyPermanentTagPush) {
     return;

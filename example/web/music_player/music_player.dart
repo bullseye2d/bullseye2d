@@ -71,7 +71,13 @@ class MusicPlayerApp extends CommonApp {
 
       final progressFillColors = [Color(0.8, 0.9, 0.8, 1.0), Color(0.3, 0.4, 0.4, 1.0)];
 
-      gfx.drawRect(barMarginX + padding, barY + padding, (barWidth - padding * 2) * audio.musicProgress, barHeight - padding * 2, colors: progressFillColors);
+      gfx.drawRect(
+        barMarginX + padding,
+        barY + padding,
+        (barWidth - padding * 2) * audio.musicProgress,
+        barHeight - padding * 2,
+        colors: progressFillColors,
+      );
     }
 
     // Draw the text
@@ -87,5 +93,4 @@ class MusicPlayerApp extends CommonApp {
 
     gfx.drawText(font, text, x: virtualWidth / 2, y: virtualHeight / 4, alignX: 0.5, alignY: 0.5);
   }
-
 }

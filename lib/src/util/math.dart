@@ -35,12 +35,11 @@ double sinDegree(num degree) {
 /// {@category Utility}
 /// Calculates the cosine of an angle given in [degree]s.
 double cosDegree(num degree) {
-    return cos(degree * (pi / 180));
+  return cos(degree * (pi / 180));
 }
 
 /// {@category Utility}
 /// Calculates the tangent of an angle given in [degree]s.
 double tanDegree(num degree) {
-    return tan(degree * (pi / 180));
+  return tan(degree * (pi / 180));
 }
-

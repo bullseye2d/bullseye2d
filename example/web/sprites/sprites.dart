@@ -22,7 +22,7 @@ class SpritesApp extends CommonApp {
       paddingY: 2,
       textureFlags: 0,
       pivotX: 32 / 58.0,
-      pivotY: 0.5
+      pivotY: 0.5,
     );
   }
 

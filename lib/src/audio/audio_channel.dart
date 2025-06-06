@@ -14,7 +14,7 @@ enum ChannelState {
   paused,
 
   /// The channel's playback was suspended (e.g., due to the application losing focus).
-  suspended
+  suspended,
 }
 
 /// @nodoc
@@ -34,13 +34,12 @@ class AudioChannel {
   var volume = 1.0;
 
   AudioChannel(AudioContext audioContext) {
-    gainNode = audioContext.createGain()
-      ..connect(audioContext.destination);
+    gainNode = audioContext.createGain()..connect(audioContext.destination);
 
-    pannerNode = audioContext.createPanner()
-      ..rolloffFactor = 0
-      ..panningModel = 'equalpower'
-      ..connect(gainNode);
+    pannerNode =
+        audioContext.createPanner()
+          ..rolloffFactor = 0
+          ..panningModel = 'equalpower'
+          ..connect(gainNode);
   }
 }
-

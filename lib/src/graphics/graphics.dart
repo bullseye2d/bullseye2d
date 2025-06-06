@@ -1,6 +1,18 @@
 // ignore_for_file: lines_longer_than_80_chars
 import 'package:bullseye2d/bullseye2d.dart';
-import 'package:web/web.dart' show ElementEventGetters, Event, HTMLCanvasElement, WebGL2RenderingContext, WebGLBuffer, WebGLProgram, WebGLRenderingContext, WebGLShader, WebGLUniformLocation, WebGLVertexArrayObject, WebGLTexture;
+import 'package:web/web.dart'
+    show
+        ElementEventGetters,
+        Event,
+        HTMLCanvasElement,
+        WebGL2RenderingContext,
+        WebGLBuffer,
+        WebGLProgram,
+        WebGLRenderingContext,
+        WebGLShader,
+        WebGLUniformLocation,
+        WebGLVertexArrayObject,
+        WebGLTexture;
 import 'dart:js_interop';
 import 'dart:typed_data';
 import 'package:vector_math/vector_math_64.dart';
@@ -140,15 +152,30 @@ class Graphics {
       ..enableVertexAttribArray(_positionAttributeLocation)
       ..vertexAttribPointer(_positionAttributeLocation, 2, GL.FLOAT, false, _vertexSizeInBytes, 0)
       ..enableVertexAttribArray(_texcoordAttributeLocation)
-      ..vertexAttribPointer(_texcoordAttributeLocation, 2, GL.FLOAT, false, _vertexSizeInBytes, 2 * Float32List.bytesPerElement)
+      ..vertexAttribPointer(
+        _texcoordAttributeLocation,
+        2,
+        GL.FLOAT,
+        false,
+        _vertexSizeInBytes,
+        2 * Float32List.bytesPerElement,
+      )
       ..enableVertexAttribArray(_colorAttributeLocation)
-      ..vertexAttribPointer(_colorAttributeLocation, 4, GL.UNSIGNED_BYTE, true, _vertexSizeInBytes, 4 * Float32List.bytesPerElement)
+      ..vertexAttribPointer(
+        _colorAttributeLocation,
+        4,
+        GL.UNSIGNED_BYTE,
+        true,
+        _vertexSizeInBytes,
+        4 * Float32List.bytesPerElement,
+      )
       ..useProgram(_program)
       ..disable(GL.SCISSOR_TEST)
       ..lineWidth(_renderState.lineWidth);
 
     final JSAny? param = gl.getParameter(GL.ALIASED_LINE_WIDTH_RANGE);
-    final Float32List lineWidthRange = param.isA<JSFloat32Array>() ? (param as JSFloat32Array).toDart : Float32List.fromList([1.0, 1.0]);
+    final Float32List lineWidthRange =
+        param.isA<JSFloat32Array>() ? (param as JSFloat32Array).toDart : Float32List.fromList([1.0, 1.0]);
 
     _lineWidthMin = lineWidthRange[0];
     _lineWidthMax = lineWidthRange[1];
@@ -253,11 +280,24 @@ class Graphics {
   void setViewport(int x, int y, int width, int height) {
     final glY = _canvas.height - height - y;
 
-    if (_renderState.viewport.x != x || _renderState.viewport.y != glY || _renderState.viewport.width != width || _renderState.viewport.height != height) {
+    if (_renderState.viewport.x != x ||
+        _renderState.viewport.y != glY ||
+        _renderState.viewport.width != width ||
+        _renderState.viewport.height != height) {
       _renderState.viewport.set(x, glY, width, height);
-      gl.viewport(_renderState.viewport.x, _renderState.viewport.y, _renderState.viewport.width, _renderState.viewport.height);
+      gl.viewport(
+        _renderState.viewport.x,
+        _renderState.viewport.y,
+        _renderState.viewport.width,
+        _renderState.viewport.height,
+      );
       if (_renderState.isScissorEnabled) {
-        gl.scissor(_renderState.scissor.x, _renderState.scissor.y, _renderState.scissor.width, _renderState.scissor.height);
+        gl.scissor(
+          _renderState.scissor.x,
+          _renderState.scissor.y,
+          _renderState.scissor.width,
+          _renderState.scissor.height,
+        );
       }
     }
   }
@@ -395,14 +435,19 @@ class Graphics {
       flush();
 
       if (numVerticesNeeded > _currentBatchCapacityVertices) {
-        die("Error: Primitive requires $numVerticesNeeded vertices, which exceeds total buffer capacity $_currentBatchCapacityVertices. Increase initial buffer size.");
+        die(
+          "Error: Primitive requires $numVerticesNeeded vertices, which exceeds total buffer capacity $_currentBatchCapacityVertices. Increase initial buffer size.",
+        );
       }
     }
   }
 
   void _prepareRenderState(_PrimitiveType type, {Texture? texture}) {
     final requestedTexture = texture ?? Texture.white;
-    if ((_renderState.texture != requestedTexture.texture || _renderState._primitiveType != type || _renderState._primitiveType == _PrimitiveType.triangleFan || _renderState._primitiveType == _PrimitiveType.lineStrip)) {
+    if ((_renderState.texture != requestedTexture.texture ||
+        _renderState._primitiveType != type ||
+        _renderState._primitiveType == _PrimitiveType.triangleFan ||
+        _renderState._primitiveType == _PrimitiveType.lineStrip)) {
       flush();
     }
 
@@ -480,7 +525,7 @@ class Graphics {
 
     for (var i = 0; i < vertices.length; i += 2) {
       var x1 = vertices[i];
-      var y1 = vertices[i+1];
+      var y1 = vertices[i + 1];
       _transfromAndAddVertices(x1, y1, 0.0, 0.0, getColorFromList(colors, i ~/ 2, _encodedColor));
     }
   }
@@ -551,7 +596,7 @@ class Graphics {
   /// - [texture]: An optional [Texture] to apply. Defaults to a white texture.
   /// - [colors]: An optional list of [Color] objects. If provided, `colors[0]`
   ///   is applied to all vertices.
-  void drawPoly(List<double> vertices, {List<double>? uvs, Texture? texture, ColorList? colors}){
+  void drawPoly(List<double> vertices, {List<double>? uvs, Texture? texture, ColorList? colors}) {
     int vCount = vertices.length ~/ 2;
     if (vCount < 3) {
       warn("Can't render polygon. At least 3 vertices required.");
@@ -565,11 +610,11 @@ class Graphics {
 
     _prepareRenderState(_PrimitiveType.triangles, texture: texture);
 
-    for (var i = 0; i < vCount; i++ ) {
-      var x = vertices[i*2];
-      var y = vertices[i*2+1];
-      var u = uvs?[i*2] ?? 0.0;
-      var v = uvs?[i*2+1] ?? 0.0;
+    for (var i = 0; i < vCount; i++) {
+      var x = vertices[i * 2];
+      var y = vertices[i * 2 + 1];
+      var u = uvs?[i * 2] ?? 0.0;
+      var v = uvs?[i * 2 + 1] ?? 0.0;
       _transfromAndAddVertices(x, y, u, v, getColorFromList(colors, 0, _encodedColor));
     }
   }
@@ -581,7 +626,22 @@ class Graphics {
   /// - [texture]: An optional [Texture] to apply. Defaults to a white texture.
   /// - [colors]: An optional list of [Color] objects for per-vertex coloring.
   ///   `colors[0]` for first vertex, `colors[1]` for second, `colors[2]` for third.
-  void drawTriangle(double x1, double y1, double x2, double y2, double x3, double y3, double u1, double v1, double u2, double v2, double u3, double v3, {Texture? texture, ColorList? colors}) {
+  void drawTriangle(
+    double x1,
+    double y1,
+    double x2,
+    double y2,
+    double x3,
+    double y3,
+    double u1,
+    double v1,
+    double u2,
+    double v2,
+    double u3,
+    double v3, {
+    Texture? texture,
+    ColorList? colors,
+  }) {
     _prepareRenderState(_PrimitiveType.triangles, texture: texture);
 
     _transfromAndAddVertices(x1, y1, u1, v1, getColorFromList(colors, 0, _encodedColor));
@@ -598,7 +658,18 @@ class Graphics {
   /// - [width], [height]: Width and height of the destination rectangle. Defaults to source dimensions.
   /// - [colors]: An optional list of [Color] objects for per-vertex coloring (tinting).
   ///   Colors are applied in order: top-left, bottom-left, top-right, bottom-right of the quad.
-  void drawTexture(Texture tex, {double? srcX, double? srcY, double? srcWidth, double? srcHeight, double? x, double? y, double? width, double? height, ColorList? colors}) {
+  void drawTexture(
+    Texture tex, {
+    double? srcX,
+    double? srcY,
+    double? srcWidth,
+    double? srcHeight,
+    double? x,
+    double? y,
+    double? width,
+    double? height,
+    ColorList? colors,
+  }) {
     _prepareRenderState(_PrimitiveType.quads, texture: tex);
 
     final texW = tex.width.toDouble();
@@ -670,7 +741,18 @@ class Graphics {
   ///
   /// Returns a [Point] representing the width and height of the drawn text block,
   /// after scaling.
-  Point drawText(BitmapFont font, String text, {x = 0.0, y = 0.0, alignX = 0.0, alignY = 0.0, scaleX = 1.0, scaleY = 1.0, alignXByLine = true, ColorList? colors}) {
+  Point drawText(
+    BitmapFont font,
+    String text, {
+    x = 0.0,
+    y = 0.0,
+    alignX = 0.0,
+    alignY = 0.0,
+    scaleX = 1.0,
+    scaleY = 1.0,
+    alignXByLine = true,
+    ColorList? colors,
+  }) {
     var lines = text.split("\n");
     var h = font.leading * lines.length * scaleY;
     var w = measureText(font, text).x * scaleX;
@@ -716,7 +798,16 @@ class Graphics {
   /// - [colors]: An optional [ColorList] for tinting the image. `colors[0]` is used.
   ///
   /// If the [frames] are still loading this method does nothing.
-  void drawImage(Images frames, [int frame = 0, double x = 0.0, double y = 0.0, double rotation = 0.0, double scaleX = 1.0, double scaleY = 1.0, ColorList? colors]) {
+  void drawImage(
+    Images frames, [
+    int frame = 0,
+    double x = 0.0,
+    double y = 0.0,
+    double rotation = 0.0,
+    double scaleX = 1.0,
+    double scaleY = 1.0,
+    ColorList? colors,
+  ]) {
     if (frames.isLoading) {
       return;
     }
@@ -732,7 +823,18 @@ class Graphics {
     scale(scaleX, scaleY);
     rotate(rotation);
     translate(-image.pivotX * image.width, -image.pivotY * image.height);
-    drawTexture(image.texture, srcX: image.sourceRect.x.toDouble(), srcY: image.sourceRect.y.toDouble(), srcWidth: image.width.toDouble(), srcHeight: image.height.toDouble(), x: 0, y: 0, width: image.width.toDouble(), height: image.height.toDouble(), colors: colors);
+    drawTexture(
+      image.texture,
+      srcX: image.sourceRect.x.toDouble(),
+      srcY: image.sourceRect.y.toDouble(),
+      srcWidth: image.width.toDouble(),
+      srcHeight: image.height.toDouble(),
+      x: 0,
+      y: 0,
+      width: image.width.toDouble(),
+      height: image.height.toDouble(),
+      colors: colors,
+    );
     popMatrix();
   }
 
@@ -760,7 +862,7 @@ class Graphics {
       ..useProgram(_program)
       ..bindVertexArray(_vao)
       ..bindBuffer(GL.ARRAY_BUFFER, _interleavedBuffer)
-	  ..bufferData(GL.ARRAY_BUFFER, _batchCapacityInBytes.toJS, GL.STREAM_DRAW)
+      ..bufferData(GL.ARRAY_BUFFER, _batchCapacityInBytes.toJS, GL.STREAM_DRAW)
       ..bufferSubData(GL.ARRAY_BUFFER, 0, _batchedInterleavedData.buffer.asUint8List(0, dataSizeInBytes).toJS);
 
     switch (_renderState._primitiveType) {

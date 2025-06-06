@@ -24,14 +24,17 @@ class BitmapFont {
   /// A string containing the default set of printable ASCII characters (codes 32-126).
   ///
   /// This set is commonly used for basic text rendering.
-  static const String defaultAscii = r""" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~""";
+  static const String defaultAscii =
+      r""" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~""";
 
   /// A string containing an extended set of ASCII characters.
   ///
   /// This includes the [defaultAscii] characters plus additional characters
   /// from the Latin-1 Supplement block (codes 160-255).
   /// Generated with: `"${String.fromCharCodes(Iterable.generate(127-32, (r) => r + 32))}${String.fromCharCodes(Iterable.generate(256-160, (r) => r + 160))}"`
-  static const String extendedAscii = defaultAscii + r""" ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ""";
+  static const String extendedAscii =
+      defaultAscii +
+      r""" ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ""";
 
   final GL2 _gl;
 
@@ -40,7 +43,7 @@ class BitmapFont {
   /// @nodoc
   final Map<int, Glyph> glyphs = {};
 
-/// The effective vertical spacing between lines of text, in pixels.
+  /// The effective vertical spacing between lines of text, in pixels.
   ///
   /// This is calculated as `leadingBase * leadingMod`.
   double get leading => leadingBase * leadingMod;
@@ -104,7 +107,7 @@ class BitmapFont {
         //NOTE: I'm adding a few pixels to the width/height, because some fonts get cut on the edge. Could be that
         // there is an error in my calculations, but could also be the case that the font metrics are not
         // 100% accurate. Need to investigate furhter!
-        final charWidth =  2 + metrics.actualBoundingBoxLeft.abs().ceil() + metrics.actualBoundingBoxRight.abs().ceil();
+        final charWidth = 2 + metrics.actualBoundingBoxLeft.abs().ceil() + metrics.actualBoundingBoxRight.abs().ceil();
         final charHeight = 2 + metrics.fontBoundingBoxAscent.abs().ceil() + metrics.fontBoundingBoxDescent.abs().ceil();
 
         if (charWidth > maxWidth) maxWidth = charWidth;
@@ -187,20 +190,16 @@ class BitmapFont {
 
       final imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data.toDart;
       final texture = Texture.create(
-          gl: _gl,
-          pixelData: imageData.buffer.asUint8List(),
-          width: canvas.width,
-          height: canvas.height,
-          textureFlags: (antiAlias ? TextureFlags.filter : 0) | TextureFlags.mipmap | TextureFlags.clampST);
+        gl: _gl,
+        pixelData: imageData.buffer.asUint8List(),
+        width: canvas.width,
+        height: canvas.height,
+        textureFlags: (antiAlias ? TextureFlags.filter : 0) | TextureFlags.mipmap | TextureFlags.clampST,
+      );
       _textures.add(texture);
 
       for (final entry in glyphRect.entries) {
-        glyphs[entry.key]!.image = Image(
-          texture: texture,
-          sourceRect: entry.value,
-          pivotX: 0.0,
-          pivotY: pivotY,
-        );
+        glyphs[entry.key]!.image = Image(texture: texture, sourceRect: entry.value, pivotX: 0.0, pivotY: pivotY);
       }
     }
   }

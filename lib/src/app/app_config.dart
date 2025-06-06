@@ -77,6 +77,6 @@ class AppConfig {
     this.canvasElement = "#gameCanvas",
     this.gfxBatchCapacityInBytes = 65536,
     this.autoSuspend = true,
-    this.autoRequestAccelerometerPermission = false
+    this.autoRequestAccelerometerPermission = false,
   });
 }

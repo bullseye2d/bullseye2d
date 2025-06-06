@@ -39,24 +39,17 @@ class DocsCommand extends Command {
     deleteDirectory(_docApiDir);
 
     print('Generating API documentation...');
-    await runProcess(
-      Platform.executable,
-      ['doc', '--validate-links'],
-    );
+    await runProcess(Platform.executable, ['doc', '--validate-links']);
 
     print('Documentation generated successfully in $_docApiDir.');
 
     if (serveDocs) {
       if (!await Directory(_docApiDir).exists()) {
-          print('Error: Documentation directory $_docApiDir does not exist. Cannot serve.');
-          exit(1);
+        print('Error: Documentation directory $_docApiDir does not exist. Cannot serve.');
+        exit(1);
       }
 
-      final staticHandler = createStaticHandler(
-        _docApiDir,
-        defaultDocument: 'index.html',
-        serveFilesOutsidePath: true,
-      );
+      final staticHandler = createStaticHandler(_docApiDir, defaultDocument: 'index.html', serveFilesOutsidePath: true);
 
       final cascade = shelf.Cascade().add(staticHandler);
 

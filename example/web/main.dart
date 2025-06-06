@@ -27,7 +27,6 @@ main() {
       InputApp();
       break;
 
-
     default:
       error("Unknown app!");
   }

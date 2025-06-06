@@ -6,21 +6,25 @@ import 'dart:js_interop';
 /// Represents the standard buttons and directional inputs found on a typical gamepad.
 enum GamepadButton {
   // ignore: constant_identifier_names
+  // dart format off
   A,  B,  X,  Y,  LB,  RB,  View,  Menu,  Left,  Up,  Right,  Down,  LSB,  RSB,  Home
+  // dart format on
 }
 
 /// {@category Input}
 /// Identifies the left or right analog stick on a gamepad.
 enum Joystick {
   // ignore: constant_identifier_names
-  Left, Right
+  Left,
+  Right,
 }
 
 /// {@category Input}
 /// Identifies the left or right analog trigger on a gamepad.
 enum Trigger {
   // ignore: constant_identifier_names
-  Left, Right
+  Left,
+  Right,
 }
 
 /// Holds the input state for a single gamepad.
@@ -35,21 +39,21 @@ class _GamepadInput {
   final List<bool> buttonUp = List.filled(GamepadButton.values.length, false);
 
   static const Map<GamepadButton, int> standardButtonMapping = {
-    GamepadButton.A     : 0,
-    GamepadButton.B     : 1,
-    GamepadButton.X     : 2,
-    GamepadButton.Y     : 3,
-    GamepadButton.LB    : 4,
-    GamepadButton.RB    : 5,
-    GamepadButton.View  : 8,
-    GamepadButton.Menu  : 9,
-    GamepadButton.LSB   : 10,
-    GamepadButton.RSB   : 11,
-    GamepadButton.Up    : 12,
-    GamepadButton.Down  : 13,
-    GamepadButton.Left  : 14,
-    GamepadButton.Right : 15,
-    GamepadButton.Home  : 16
+    GamepadButton.A: 0,
+    GamepadButton.B: 1,
+    GamepadButton.X: 2,
+    GamepadButton.Y: 3,
+    GamepadButton.LB: 4,
+    GamepadButton.RB: 5,
+    GamepadButton.View: 8,
+    GamepadButton.Menu: 9,
+    GamepadButton.LSB: 10,
+    GamepadButton.RSB: 11,
+    GamepadButton.Up: 12,
+    GamepadButton.Down: 13,
+    GamepadButton.Left: 14,
+    GamepadButton.Right: 15,
+    GamepadButton.Home: 16,
   };
 
   reset() {
@@ -80,7 +84,7 @@ class _GamepadInput {
     xAxis[Joystick.Right.index] = (gamepad.axes.length > 2) ? gamepad.axes[2].toDartDouble : 0.0;
     yAxis[Joystick.Right.index] = (gamepad.axes.length > 3) ? gamepad.axes[3].toDartDouble : 0.0;
 
-    trigger[Trigger.Left.index]  = (gamepad.buttons.length > 6) ? gamepad.buttons[6].value : 0.0;
+    trigger[Trigger.Left.index] = (gamepad.buttons.length > 6) ? gamepad.buttons[6].value : 0.0;
     trigger[Trigger.Right.index] = (gamepad.buttons.length > 7) ? gamepad.buttons[7].value : 0.0;
 
     for (var entry in standardButtonMapping.entries) {
@@ -90,7 +94,7 @@ class _GamepadInput {
 
     for (var button in GamepadButton.values) {
       buttonHit[button.index] = buttonDown[button.index] && !previousButtonDown[button.index];
-      buttonUp[button.index]  = !buttonDown[button.index] && previousButtonDown[button.index];
+      buttonUp[button.index] = !buttonDown[button.index] && previousButtonDown[button.index];
     }
 
     return true;

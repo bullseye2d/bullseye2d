@@ -1,6 +1,5 @@
 import 'package:bullseye2d/bullseye2d.dart';
 
-
 /// {@category IO}
 /// An individual item being tracked by the [Loader].
 class LoaderItem {
@@ -43,7 +42,7 @@ class LoaderItem {
 class Loader {
   /// Set this to false if you don't want your [App] instance automatically
   /// calling [App.onLoading] if loading sequence is in progress.
-bool isEnabled = true;
+  bool isEnabled = true;
 
   /// Indicates whether the initial sequence of adding items to the loader
   /// is considered finished.

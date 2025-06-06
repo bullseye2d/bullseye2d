@@ -54,4 +54,3 @@ WebGLProgram? _createProgramFromSources(GL2 gl, String vertexShaderSource, Strin
 
   return program;
 }
-

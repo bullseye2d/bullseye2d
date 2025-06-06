@@ -1,4 +1,3 @@
-
 /// {@category Utility}
 /// Provides extension methods for bitmask operations on integers.
 extension BitmaskExtension on int {
@@ -12,4 +11,3 @@ extension BitmaskExtension on int {
     return (this & flags) == flags;
   }
 }
-

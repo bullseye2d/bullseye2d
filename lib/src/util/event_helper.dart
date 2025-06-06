@@ -1,4 +1,3 @@
-
 import 'package:web/web.dart';
 
 /// {@category Utility}
@@ -12,4 +11,3 @@ void stopEvent(Event event) {
   event.stopPropagation();
   event.preventDefault();
 }
-

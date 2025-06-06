@@ -42,7 +42,7 @@ class TextureFlags {
   /// Repeats the texture with mirroring in both S (U) and T (V) directions.
   static const int mirroredRepeatST = mirroredRepeatS | mirroredRepeatT;
 
-/// Default texture flags: enables [filter] and [mipmap].
+  /// Default texture flags: enables [filter] and [mipmap].
   static const int defaultFlags = filter | mipmap;
 }
 
@@ -90,7 +90,14 @@ class Texture {
   /// - [height]: Initial height (defaults to 0).
   /// - [flags]: Texture flags (defaults to [TextureFlags.defaultFlags]).
   /// - [pixelData]: Optional initial pixel data.
-  Texture({required GL2 gl, required this.texture, this.width = 0, this.height = 0, this.flags = TextureFlags.defaultFlags, Uint8List? pixelData}) : _gl = gl {
+  Texture({
+    required GL2 gl,
+    required this.texture,
+    this.width = 0,
+    this.height = 0,
+    this.flags = TextureFlags.defaultFlags,
+    Uint8List? pixelData,
+  }) : _gl = gl {
     this.pixelData = pixelData ?? Uint8List(0);
   }
 
@@ -108,7 +115,13 @@ class Texture {
   /// - [width]: Width of the texture. Defaults to 1 if [pixelData] is `null`.
   /// - [height]: Height of the texture. Defaults to 1 if [pixelData] is `null`.
   /// - [textureFlags]: Bitmask of [TextureFlags] to apply.
-  static Texture create({required GL2 gl, Uint8List? pixelData, int width = 1, int height = 1, int textureFlags = TextureFlags.defaultFlags}) {
+  static Texture create({
+    required GL2 gl,
+    Uint8List? pixelData,
+    int width = 1,
+    int height = 1,
+    int textureFlags = TextureFlags.defaultFlags,
+  }) {
     var flags = textureFlags;
     final tex = gl.createTexture();
     if (tex == null) {
@@ -121,7 +134,17 @@ class Texture {
       width = 1;
       height = 1;
     }
-    gl.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, width.toJS, height.toJS, 0.toJS, GL.RGBA, GL.UNSIGNED_BYTE, pixelData.toJS);
+    gl.texImage2D(
+      GL.TEXTURE_2D,
+      0,
+      GL.RGBA,
+      width.toJS,
+      height.toJS,
+      0.toJS,
+      GL.RGBA,
+      GL.UNSIGNED_BYTE,
+      pixelData.toJS,
+    );
 
     if (flags.has(TextureFlags.filter)) {
       gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
@@ -159,7 +182,14 @@ class Texture {
       gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
     }
 
-    final texture = Texture(gl: gl, texture: tex, width: width, height: height, flags: textureFlags, pixelData: pixelData);
+    final texture = Texture(
+      gl: gl,
+      texture: tex,
+      width: width,
+      height: height,
+      flags: textureFlags,
+      pixelData: pixelData,
+    );
 
     texture.isLoading = false;
 
@@ -196,7 +226,17 @@ class Texture {
             final ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
             ctx.drawImage(img, 0, 0);
             final pixelData = ctx.getImageData(0, 0, texture.width, texture.height).data.toDart;
-            gl.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, texture.width.toJS, texture.height.toJS, 0.toJS, GL.RGBA, GL.UNSIGNED_BYTE, pixelData.buffer.asUint8List().toJS);
+            gl.texImage2D(
+              GL.TEXTURE_2D,
+              0,
+              GL.RGBA,
+              texture.width.toJS,
+              texture.height.toJS,
+              0.toJS,
+              GL.RGBA,
+              GL.UNSIGNED_BYTE,
+              pixelData.buffer.asUint8List().toJS,
+            );
             texture.pixelData = pixelData.buffer.asUint8List();
             texture.isLoading = false;
             texture.triggerOnLoadCallback();
@@ -284,7 +324,9 @@ class Texture {
 
     final expectedLength = width * height * 4;
     if (data.length != expectedLength) {
-      die('Provided data length (${data.length}) does not match expected length ($expectedLength) for texture dimensions ${width}x$height.');
+      die(
+        'Provided data length (${data.length}) does not match expected length ($expectedLength) for texture dimensions ${width}x$height.',
+      );
     }
 
     _gl.bindTexture(GL.TEXTURE_2D, texture);

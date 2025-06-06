@@ -1,4 +1,3 @@
-
 import 'package:bullseye2d/bullseye2d.dart';
 
 abstract class CommonApp extends App {

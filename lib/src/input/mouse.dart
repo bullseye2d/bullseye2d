@@ -91,7 +91,6 @@ class Mouse {
     _updateSize();
   }
 
-
   /// Removes all event listeners previously attached by this [Mouse] instance.
   dispose() {
     _canvas.removeEventListener('wheel', _onWheel.toJS);

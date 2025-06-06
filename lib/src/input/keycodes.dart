@@ -1,8 +1,8 @@
-
 // ignore_for_file: constant_identifier_names
 /// {@category Input}
 /// Represents physical key codes
 enum KeyCodes {
+  // dart format off
   A('KeyA'), B('KeyB'), C('KeyC'), D('KeyD'), E('KeyE'),
   F('KeyF'), G('KeyG'), H('KeyH'), I('KeyI'), J('KeyJ'),
   K('KeyK'), L('KeyL'), M('KeyM'), N('KeyN'), O('KeyO'),
@@ -37,6 +37,7 @@ enum KeyCodes {
   NumEnter('NumpadEnter'), NumEqual('NumpadEqual'),
 
   Unknown('Unknown');
+  // dart format on
 
   /// The string representation of the key code
   final String code;
@@ -44,9 +45,7 @@ enum KeyCodes {
   /// Constructs a [KeyCodes] enum value.
   const KeyCodes(this.code);
 
-  static final Map<String, KeyCodes> _codeMap = {
-    for (var key in KeyCodes.values) key.code: key
-  };
+  static final Map<String, KeyCodes> _codeMap = {for (var key in KeyCodes.values) key.code: key};
 
   /// Converts a string `code` to its corresponding [KeyCodes] enum value.
   ///

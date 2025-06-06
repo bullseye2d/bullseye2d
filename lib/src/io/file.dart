@@ -52,7 +52,14 @@ Future<String> loadStringAsync(String url, Loader loadingInfo) async {
 ///
 /// Returns a [Future<T>] that completes with the processed file content.
 /// If loading fails, it completes with [defaultValue] or as determined by [onError].
-Future<T> load<T>(String path, Loader loadingInfo, {String responseType = "text", T? defaultValue, void Function(Event event)? onError, Function(JSAny response, Function(T) completer, void Function(Event event) onError)? onLoad}) async {
+Future<T> load<T>(
+  String path,
+  Loader loadingInfo, {
+  String responseType = "text",
+  T? defaultValue,
+  void Function(Event event)? onError,
+  Function(JSAny response, Function(T) completer, void Function(Event event) onError)? onLoad,
+}) async {
   var loadingState = loadingInfo.add(path);
   final completer = Completer<T>();
   final xhr = XMLHttpRequest();
