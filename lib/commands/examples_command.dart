@@ -70,9 +70,6 @@ class ExamplesCommand extends Command {
       exit(1);
     }
 
-    await runProcess(Platform.executable, ['pub', 'get'], workingDirectory: examplesDirPath, verbose: false);
-    print('[✓] Dependencies fetched for examples.');
-
     List<String> dartVmArgs = [];
     if (vmServicePort.isNotEmpty && int.tryParse(vmServicePort) != null) {
       dartVmArgs.add('--enable-vm-service=$vmServicePort');
