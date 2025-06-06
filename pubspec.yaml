@@ -1,6 +1,6 @@
 name: bullseye2d
 description: 2D Game Engine for Dart
-version: 0.0.1
+version: 1.0.0
 repository: https://github.com/bullseye2d/bullseye2d
 
 executables:
