@@ -1,3 +1,7 @@
+## 1.0.7
+
+- Fixed: When loading an image / a texture no mipmaps were generated after loading (if requested via texture flags)
+
 ## 1.0.6
 
 - Formatted dart code. 
