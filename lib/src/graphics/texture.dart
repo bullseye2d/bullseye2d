@@ -239,6 +239,11 @@ class Texture {
             );
             texture.pixelData = pixelData.buffer.asUint8List();
             texture.isLoading = false;
+
+            if (texture.flags.has(TextureFlags.mipmap)) {
+              gl.generateMipmap(GL.TEXTURE_2D);
+            }
+
             texture.triggerOnLoadCallback();
           }
         })
