@@ -4,29 +4,27 @@ import 'dart:js_interop';
 
 /// {@category Input}
 /// Represents the standard buttons and directional inputs found on a typical gamepad.
+// dart format off
 enum GamepadButton {
   // ignore: constant_identifier_names
-  // dart format off
   A,  B,  X,  Y,  LB,  RB,  View,  Menu,  Left,  Up,  Right,  Down,  LSB,  RSB,  Home
-  // dart format on
 }
 
 /// {@category Input}
 /// Identifies the left or right analog stick on a gamepad.
 enum Joystick {
   // ignore: constant_identifier_names
-  Left,
-  Right,
+  Left, Right
 }
 
 /// {@category Input}
 /// Identifies the left or right analog trigger on a gamepad.
 enum Trigger {
   // ignore: constant_identifier_names
-  Left,
-  Right,
+  Left, Right
 }
 
+// dart format on
 /// Holds the input state for a single gamepad.
 class _GamepadInput {
   final List<double> xAxis = List.filled(2, 0.0);
