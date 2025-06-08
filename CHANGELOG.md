@@ -1,3 +1,8 @@
+## 1.0.8
+
+- Fixed: Typo in Examples Readme
+- Fixed: Various Links in Api Doc fixed
+
 ## 1.0.7
 
 - Fixed: When loading an image / a texture no mipmaps were generated after loading (if requested via texture flags)
