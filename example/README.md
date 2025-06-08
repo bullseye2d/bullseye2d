@@ -11,7 +11,7 @@ If you haven't already, clone the main Bullseye2D repository:
 git clone https://github.com/bullseye2d/bullseye2d.git
 cd bullseye2d
 cd example
-darf pub get
+dart pub get
 webdev serve
 ```
 
