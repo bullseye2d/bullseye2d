@@ -2,7 +2,7 @@
 
 The audio module contains functions for playing sounds and music. You can access it via `app.audio`.
 
-It uses a fixed 32 channel model which allows you to play sounds trough any of the preset audio channels. **NOTE: It is planned to configure to number of audio channels via [AppConfig](../bullseye/AppConfig-class.html) in the future.**
+It uses a fixed 32 channel model which allows you to play sounds trough any of the preset audio channels. **NOTE: It is planned to configure to number of audio channels via [AppConfig](../bullseye2d/AppConfig-class.html) in the future.**
 
 You can dynamically alter the volume, pan and pitch of a channel.
 
@@ -16,9 +16,9 @@ The Audio Module supports `mp3`, `ogg` and `wav` files.
 
 ## Loading Sounds
 
-You can use the [loadSound](../bullseye/ResourceManager/loadSound.html) method of [ResourceManager](..//bullseye/ResourceManager/ResourceManager.html) to load sounds.
+You can use the [loadSound](../bullseye2d/ResourceManager/loadSound.html) method of [ResourceManager](../bullseye2d/ResourceManager/ResourceManager.html) to load sounds.
 
-Sounds are loaded asynchronous. During loading the App's [onLoading](../bullseye/App/onLoading.html) method gets called instead of [onUpdate](../bullseye/App/onUpdate.html) and [onRender](../bullseye/App/onRender.html) (if [loader.isEnabled](../bullseye/Loader/isEnabled.html) is set to `true`, which is the default).
+Sounds are loaded asynchronous. During loading the App's [onLoading](../bullseye2d/App/onLoading.html) method gets called instead of [onUpdate](../bullseye2d/App/onUpdate.html) and [onRender](../bullseye2d/App/onRender.html) (if [loader.isEnabled](../bullseye2d/Loader/isEnabled.html) is set to `true`, which is the default).
 
 ```dart
 late Sound shootSfx;
@@ -33,10 +33,10 @@ shootSfx = resources.loadSound(
 ## Playing Sounds
 
 Sounds are played on `channels`.
-- [audio.playSound](../bullseye/Audio/playSound.html):
+- [audio.playSound](../bullseye2d/Audio/playSound.html):
   - If `channel = -1` (default): Plays on any available channel.
   - Returns the channel ID it's playing on, or -1 if failed.
-- [audio.playSoundOnTargetChannels](../bullseye/Audio/playSoundOnTargetChannels.html): Tries to play on one of the specified channels. This is useful if you want to create specific group for differen types of sound effects.
+- [audio.playSoundOnTargetChannels](../bullseye2d/Audio/playSoundOnTargetChannels.html): Tries to play on one of the specified channels. This is useful if you want to create specific group for differen types of sound effects.
 
 ```dart
 if (keyboard.keyHit(KeyCodes.Space)) {

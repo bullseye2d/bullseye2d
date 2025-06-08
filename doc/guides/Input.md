@@ -10,9 +10,9 @@ The input module allows you to check for user input from different devices like 
 
 ## Keyboard
 
-You can use [Keyboard API](../bullseye/Keyboard-class.html) to check key states.
+You can use [Keyboard API](../bullseye2d/Keyboard-class.html) to check key states.
 
-To check for a specific Key, you can use the [KeyCodes](../bullseye/KeyCodes.html) enum.
+To check for a specific Key, you can use the [KeyCodes](../bullseye2d/KeyCodes.html) enum.
 
 | Function/Property        | Description                           |
 |:----------------|:--------------------------------------|
@@ -74,7 +74,7 @@ main() {
 
 ## Mouse
 
-The [Mouse API](../bullseye/Mouse-class.html) handles mouse button presses, movement, wheel, and touch input. Coordinates are relative to the canvas (by default).
+The [Mouse API](../bullseye2d/Mouse-class.html) handles mouse button presses, movement, wheel, and touch input. Coordinates are relative to the canvas (by default).
 
 | Property/Method                | Description                                                                                                |
 |--------------------------------|------------------------------------------------------------------------------------------------------------|
@@ -138,7 +138,7 @@ main() {
 
 ## Gamepad
 
-The [Gamepad API](../bullseye/Gamepad-class.html) supports up to 4 gamepads with a standard (XBOX Controller) mapping.
+The [Gamepad API](../bullseye2d/Gamepad-class.html) supports up to 4 gamepads with a standard (XBOX Controller) mapping.
 
 
 | Function / Property                          | Description                                                                                                                                                   |
@@ -174,7 +174,7 @@ if (gamepad.countDevices() > 0) {
 
 ## Accelerometer
 
-The [Accelerometer API](../bullseye/Accelerometer-class.html) provides device motion data. Values are normalized (1.0 typically means 1G of acceleration).
+The [Accelerometer API](../bullseye2d/Accelerometer-class.html) provides device motion data. Values are normalized (1.0 typically means 1G of acceleration).
 | Property        | Description                           |
 |:----------------|:--------------------------------------|
 | `accel.x` | Acceleration along the X-axis.        |

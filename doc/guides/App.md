@@ -84,7 +84,7 @@ void main() {
 
 ## Configure your app
 
-You can optionally provide an [AppConfig](../bullseye/AppConfig-class.html) object when you constructing your app. For example, you can let your application know which HTML Canvas Element it should use to render your application into it.
+You can optionally provide an [AppConfig](../bullseye2d/AppConfig-class.html) object when you constructing your app. For example, you can let your application know which HTML Canvas Element it should use to render your application into it.
 
 ```dart
 class MyGame extends App {
@@ -115,7 +115,7 @@ void main() {
 }
 ```
 
-For all possible configuration values, have a look at the [AppConfig](../bullseye/AppConfig-class.html) class.
+For all possible configuration values, have a look at the [AppConfig](../bullseye2d/AppConfig-class.html) class.
 
 ## All core features at your fingertips
 

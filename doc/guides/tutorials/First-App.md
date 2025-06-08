@@ -144,7 +144,7 @@ Lets also have a look at the index.html file created for you:
 </html>
 ```
 
-The `index.html`-file needs to have a `Canvas Element`. `Bullseye2D` by default looks for id `gameCanvas`, but you can change that to anything you like, as long as you provide the `id` via an [**AppConfig**](../bullseye/AppConfig-class.html) object to your application.
+The `index.html`-file needs to have a `Canvas Element`. `Bullseye2D` by default looks for id `gameCanvas`, but you can change that to anything you like, as long as you provide the `id` via an [**AppConfig**](../bullseye2d/AppConfig-class.html) object to your application.
 
 Please note the **`tabindex=1`** attribute. It makes the canvas element focusable, which is necessary for it to receive keyboard input. Without it, keyboard events might not be captured by your game.
 

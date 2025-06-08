@@ -14,11 +14,11 @@ How to render a progress bar during loading?
 
 You have to do nothing. `Bullseye2D` has a default loading and progress indicator. 
 
-When assets are being loaded the the App's [onLoading](../bullseye/App/onLoading.html) method gets called 
-instead of [onUpdate](../bullseye/App/onUpdate.html) and [onRender](../bullseye/App/onRender.html) (you can disable this behaviour by setting
-[loader.isEnabled](../bullseye/Loader/isEnabled.html) to `false`.)
+When assets are being loaded the the App's [onLoading](../bullseye2d/App/onLoading.html) method gets called 
+instead of [onUpdate](../bullseye2d/App/onUpdate.html) and [onRender](../bullseye2d/App/onRender.html) (you can disable this behaviour by setting
+[loader.isEnabled](../bullseye2d/Loader/isEnabled.html) to `false`.)
 
-The base [App]() class has already a default implementation, but you can create your own loader by overwriting the [onLoading](../bullseye/App/onLoading.html) method.
+The base [App]() class has already a default implementation, but you can create your own loader by overwriting the [onLoading](../bullseye2d/App/onLoading.html) method.
 
   </content>
 </details>
@@ -28,11 +28,11 @@ The base [App]() class has already a default implementation, but you can create 
 
 | Function | Description|
 |---|---|
-| [**loadTexture**(String path)](../bullseye/ResourceManager/loadTexture.html) | Loads an image file as a `Texture`. Caches textures by path. |
-| [**loadImage**(String path)](../bullseye/ResourceManager/loadImage.html) | Loads an image (and optionally slives it into frames) |
-| [**loadFont**(String path, double size)](../bullseye/ResourceManager/loadFont.html) | Loads a font file (e.g., TTF, OTF) and prepares a `BitmapFont` instance. |
-| [**loadSound**(String path)](../bullseye/ResourceManager/loadSound.html) | Loads an audio file. |
-| [**loadString**(String path)](../bullseye/ResourceManager/loadFile.html) | Loads the contents of the path into a String. |
+| [**loadTexture**(String path)](../bullseye2d/ResourceManager/loadTexture.html) | Loads an image file as a `Texture`. Caches textures by path. |
+| [**loadImage**(String path)](../bullseye2d/ResourceManager/loadImage.html) | Loads an image (and optionally slives it into frames) |
+| [**loadFont**(String path, double size)](../bullseye2d/ResourceManager/loadFont.html) | Loads a font file (e.g., TTF, OTF) and prepares a `BitmapFont` instance. |
+| [**loadSound**(String path)](../bullseye2d/ResourceManager/loadSound.html) | Loads an audio file. |
+| [**loadString**(String path)](../bullseye2d/ResourceManager/loadFile.html) | Loads the contents of the path into a String. |
 
 All `load*` methods return the asset handle (`Texture`, `Images`, `BitmapFont`, `Sound`) immediately. 
 The actual loading is asynchronous. You can already use the handles even if loading is unfinished. 
