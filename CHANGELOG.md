@@ -1,3 +1,7 @@
+## 1.0.9
+
+- Fixed: When game was embedded in iFrame and looses focus it wasn't possible for it to get the focus back which led to the problem that no events were reaching the app.
+
 ## 1.0.8
 
 - Fixed: Typo in Examples Readme

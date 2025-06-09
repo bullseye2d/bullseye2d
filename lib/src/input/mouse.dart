@@ -135,6 +135,8 @@ class Mouse {
   }
 
   void _onClick(MouseEvent event) {
+    _canvas.focus();
+
     onFirstClick?.call();
     onFirstClick = null;
 
@@ -147,6 +149,8 @@ class Mouse {
   }
 
   void _onTouchStart(TouchEvent event) {
+    _canvas.focus();
+
     var changedTouches = event.changedTouches;
     for (var i = 0; i < changedTouches.length; i++) {
       var touch = changedTouches.item(i);

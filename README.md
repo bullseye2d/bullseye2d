@@ -44,7 +44,7 @@ webdev serve
 
 You can also enjoy the demos on our [website](https://bullseye2d.org/demos).
 
-You can have a look at the source code of the examples [here](https://github.com/bullseye2d/bullseye2d.org/blob/main/example/web).
+You can have a look at the source code of the examples [here](https://github.com/bullseye2d/bullseye2d/blob/main/example/web).
 
 # Learning
 `Bullseye2D` comes with a comprehensive documentation. Read it [online](https://bullseye2d.org/docs) or use the following command to build the documentation and serve it locally on port 8080. Then open a browser on `localhost:8080` to learn about `Bullseye2D` or dive into the API Documentation.

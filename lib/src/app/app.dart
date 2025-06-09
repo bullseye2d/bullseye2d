@@ -1,5 +1,5 @@
 import 'package:bullseye2d/bullseye2d.dart';
-import 'package:web/web.dart' show ErrorEvent, FocusEvent, HTMLCanvasElement, document, window;
+import 'package:web/web.dart' show ErrorEvent, FocusEvent, Event, HTMLCanvasElement, document, window;
 import 'dart:js_interop';
 import 'dart:async';
 
@@ -175,7 +175,11 @@ abstract class App {
       }.toJS,
     );
 
+
     canvas.focus();
+    window.addEventListener('load', (Event e) {
+      canvas.focus();
+    }.toJS);
 
     updateRate = 60;
 
