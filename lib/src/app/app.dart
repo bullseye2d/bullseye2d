@@ -175,11 +175,13 @@ abstract class App {
       }.toJS,
     );
 
-
     canvas.focus();
-    window.addEventListener('load', (Event e) {
-      canvas.focus();
-    }.toJS);
+    window.addEventListener(
+      'load',
+      (Event e) {
+        canvas.focus();
+      }.toJS,
+    );
 
     updateRate = 60;
 
