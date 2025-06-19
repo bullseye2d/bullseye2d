@@ -81,10 +81,7 @@ class Rect<T extends num> {
   ///
   /// Returns `true` if the rectangles overlap, `false` otherwise.
   bool intersects(Rect<T> other) {
-    return left < other.right &&
-           right > other.left &&
-           top < other.bottom &&
-           bottom > other.top;
+    return left < other.right && right > other.left && top < other.bottom && bottom > other.top;
   }
 
   /// Sets the properties of this rectangle.
