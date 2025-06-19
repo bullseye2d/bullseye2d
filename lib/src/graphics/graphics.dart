@@ -808,10 +808,6 @@ class Graphics {
     double scaleY = 1.0,
     ColorList? colors,
   ]) {
-    if (frames.isLoading) {
-      return;
-    }
-
     if (frame < 0 || frame >= frames.length) {
       die("Image has ${frames.length} frames, you requested frame: $frame");
     }
