@@ -838,6 +838,55 @@ class Graphics {
     popMatrix();
   }
 
+  /// Draws a rectangular section from a specific [frame] of an [Images] sequence.
+  /// The image will be streteched to the destination rectangle.
+  ///
+  /// - [frames]: The [Images] object containing the frame(s) to draw from.
+  /// - [frame]: The index of the frame to draw from.
+  /// - [srcX], [srcY]: Top-left coordinates of the source rectangle within the image frame.
+  /// - [srcWidth], [srcHeight]: Width and height of the source rectangle to extract.
+  /// - [x], [y]: Top-left coordinates of the destination rectangle on the canvas.
+  /// - [width], [height]: Width and height of the destination rectangle.
+  /// - [colors]: An optional [ColorList] for tinting the image. `colors[0]` is used if provided.
+  ///
+  /// If the [frame] index is out of bounds, this method will terminate the application
+  /// with an error message.
+  ///
+  /// Note: Unlike [drawImage], this method does not apply pivot point transformations
+  /// or additional matrix transformations - it draws the specified rectangle directly.
+  void drawImageRect(
+    Images frames,
+    int frame,
+    double srcX,
+    double srcY,
+    double srcWidth,
+    double srcHeight,
+    double x,
+    double y,
+    double width,
+    double height, [
+    ColorList? colors,
+  ]) {
+    if (frame < 0 || frame >= frames.length) {
+      die("Image has ${frames.length} frames, you requested frame: $frame");
+    }
+
+    var image = frames[frame];
+
+    drawTexture(
+      image.texture,
+      srcX: srcX,
+      srcY: srcY,
+      srcWidth: srcWidth,
+      srcHeight: srcHeight,
+      x: x,
+      y: y,
+      width: width,
+      height: height,
+      colors: colors,
+    );
+  }
+
   /// Flushes all batched drawing commands to the GPU.
   ///
   /// This method sends all data to WebGL for rendering.
