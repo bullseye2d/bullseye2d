@@ -1,3 +1,7 @@
+## 1.0.10
+
+- `soko64` added to examples readme file
+
 ## 1.0.9
 
 - Fixed: When game was embedded in iFrame and looses focus it wasn't possible for it to get the focus back which led to the problem that no events were reaching the app.

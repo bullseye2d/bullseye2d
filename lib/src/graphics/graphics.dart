@@ -544,7 +544,7 @@ class Graphics {
   ///   Colors are applied in order: top-left, bottom-left, top-right, bottom-right.
   void drawRect(double x, double y, double width, double height, {Texture? texture, ColorList? colors}) {
     texture ??= Texture.white;
-    drawTexture(Texture.white, x: x, y: y, width: width, height: height, colors: colors);
+    drawTexture(texture, x: x, y: y, width: width, height: height, colors: colors);
   }
 
   /// Draws a filled oval (ellipse) centered at `(x, y)`.
