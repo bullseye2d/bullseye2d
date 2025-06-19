@@ -1,5 +1,8 @@
 ## 1.0.10
 
+- Feature: Added `drawImageRect` method for drawing source portions of images to destination rectangles with automatic stretching
+- Tweak: Improved `Rect` class with type-safe return types (returns `T` instead of `num`) and added helper setters and methods
+- Tweak: Removed automatic `frames.isLoading` checks in drawing commands for better performance - developers are now responsible for checking loading state
 - `soko64` added to examples readme file
 
 ## 1.0.9
