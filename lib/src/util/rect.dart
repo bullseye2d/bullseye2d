@@ -39,11 +39,11 @@ class Rect<T extends num> {
 
   /// The x-coordinate of the right edge of the rectangle.
   /// Calculated as `left + width`.
-  num get right => left + width;
+  T get right => (left + width) as T;
 
   /// The y-coordinate of the bottom edge of the rectangle.
   /// Calculated as `top + height`.
-  num get bottom => top + height;
+  T get bottom => (top + height) as T;
 
   /// The x-coordinate of the center of the rectangle.
   /// Calculated as `left + width / 2`.
@@ -53,6 +53,18 @@ class Rect<T extends num> {
   /// Calculated as `top + height / 2`.
   double get centerY => top + height / 2;
 
+  /// Sets the x-coordinate of the right edge of the rectangle.
+  set right(num newRight) => left = (newRight - width) as T;
+
+  /// Sets the y-coordinate of the bottom edge of the rectangle.
+  set bottom(num newBottom) => top = (newBottom - height) as T;
+
+  /// Sets the x-coordinate of the center of the rectangle.
+  set centerX(double newCenterX) => left = (newCenterX - width / 2) as T;
+
+  /// Sets the y-coordinate of the center of the rectangle.
+  set centerY(double newCenterY) => top = (newCenterY - height / 2) as T;
+
   /// Checks if the rectangle contains the point ([px], [py]).
   ///
   /// - [px]: The x-coordinate of the point.
@@ -61,6 +73,18 @@ class Rect<T extends num> {
   /// Returns `true` if the point is inside the rectangle, `false` otherwise.
   bool containsPoint(num px, num py) {
     return px >= left && px < right && py >= top && py < bottom;
+  }
+
+  /// Checks if this rectangle intersects with another rectangle.
+  ///
+  /// - [other]: The other rectangle to check intersection with.
+  ///
+  /// Returns `true` if the rectangles overlap, `false` otherwise.
+  bool intersects(Rect<T> other) {
+    return left < other.right &&
+           right > other.left &&
+           top < other.bottom &&
+           bottom > other.top;
   }
 
   /// Sets the properties of this rectangle.
