@@ -21,6 +21,7 @@ export './src/input/keycodes.dart';
 export './src/input/mouse.dart';
 export './src/io/file.dart';
 export './src/io/image.dart';
+export './src/io/localstorage.dart';
 export './src/io/resourcemanager.dart';
 export './src/loader.dart';
 export './src/util/bitmask.dart';
