@@ -1,6 +1,6 @@
 name: bullseye2d
 description: An easy-to-use, high-performance 2D game library for Dart.
-version: 1.0.10
+version: 1.0.12
 repository: https://github.com/bullseye2d/bullseye2d
 
 executables:
