@@ -421,6 +421,12 @@ class Audio {
         bool notAllowedError = false;
 
         String? errorString = error?.toString();
+
+        if (errorString != null && errorString.startsWith("NotSupportedError")) {
+          warn(errorString);
+          return;
+        }
+
         notAllowedError = (errorString != null && errorString.startsWith("NotAllowedError"));
         notAllowedError = notAllowedError || (error.isA<DOMException>() && error.name == "NotAllowedError");
 
