@@ -1,3 +1,13 @@
+## 1.0.12
+
+- Feature: Helper class added to easily save data in the browser's local storage
+- Tweak: Use Matrix3 Pool in graphics module to reduce GC pressure
+- Fix: Catch NotSupportedError on Audio Playback
+
+## 1.0.11
+
+- Code style improvements and formatting
+
 ## 1.0.10
 
 - Feature: Added `drawImageRect` method for drawing source portions of images to destination rectangles with automatic stretching
