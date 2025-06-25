@@ -64,7 +64,6 @@ class _MatrixPool {
   }
 }
 
-
 /// {@category Graphics}
 /// Provides the core 2D rendering capabilities for the Bullseye2D engine.
 ///
