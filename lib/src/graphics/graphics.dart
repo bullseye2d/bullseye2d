@@ -25,6 +25,46 @@ part 'renderbatchstate.dart';
 
 // TODO: Error Handling is still missing (especially lostGLContext and restoreGLContext Events)
 
+/// A simple object pool for Matrix3 instances to reduce GC pressure.
+///
+/// Manages a list of reusable [Matrix3] objects. When the pool is exhausted,
+/// it automatically expands by doubling its total capacity.
+class _MatrixPool {
+  final List<Matrix3> _pool = [];
+  int _totalCreated = 0;
+  final int _initialSize;
+
+  _MatrixPool({int initialSize = 10}) : _initialSize = initialSize {
+    _expandPool(_initialSize);
+  }
+
+  void _expandPool(int amount) {
+    for (var i = 0; i < amount; i++) {
+      _pool.add(Matrix3.identity());
+    }
+    _totalCreated += amount;
+  }
+
+  /// Gets a [Matrix3] from the pool.
+  ///
+  /// If the pool is empty, it doubles the total number of created matrices,
+  /// adds them to the pool, and returns one.
+  Matrix3 get() {
+    if (_pool.isEmpty) {
+      final amountToCreate = _totalCreated > 0 ? _totalCreated : _initialSize;
+      warn('[Graphics] Matrix pool exhausted. Expanding by $amountToCreate matrices.');
+      _expandPool(amountToCreate);
+    }
+    return _pool.removeLast();
+  }
+
+  /// Returns a [Matrix3] to the pool for reuse.
+  void put(Matrix3 matrix) {
+    _pool.add(matrix);
+  }
+}
+
+
 /// {@category Graphics}
 /// Provides the core 2D rendering capabilities for the Bullseye2D engine.
 ///
@@ -68,6 +108,7 @@ class Graphics {
   var _lineWidthMin = 1.0;
   var _lineWidthMax = 1.0;
 
+  late final _MatrixPool _matrixPool;
   late Matrix3 _currentMatrix;
   final List<Matrix3> _matrixStack = [];
 
@@ -106,7 +147,9 @@ class Graphics {
     gl = glContext as WebGL2RenderingContext;
 
     _byteDataView = _batchedInterleavedData.buffer.asByteData();
-    resetMatrix();
+
+    _matrixPool = _MatrixPool(initialSize: 10);
+    _currentMatrix = _matrixPool.get()..setIdentity();
 
     _program = _createProgramFromSources(gl, vertexShaderSource, fragmentShaderSource)!;
 
@@ -369,12 +412,15 @@ class Graphics {
   /// All subsequent drawing operations will be performed without any prior
   /// transformations until new transformations are applied.
   void resetMatrix() {
-    _currentMatrix = Matrix3.identity();
+    _currentMatrix.setIdentity();
   }
 
   /// Pushes a copy of the current transformation matrix onto the matrix stack.
   void pushMatrix() {
-    _matrixStack.add(_currentMatrix.clone());
+    final newCurrentMatrix = _matrixPool.get();
+    newCurrentMatrix.setFrom(_currentMatrix);
+    _matrixStack.add(_currentMatrix);
+    _currentMatrix = newCurrentMatrix;
   }
 
   /// Pops the top transformation matrix from the stack and makes it current.
@@ -383,6 +429,7 @@ class Graphics {
       die('Matrix stack is empty, cannot pop. Resetting matrix to identity.');
       return;
     }
+    _matrixPool.put(_currentMatrix);
     _currentMatrix = _matrixStack.removeLast();
   }
 
