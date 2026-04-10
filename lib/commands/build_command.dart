@@ -48,10 +48,8 @@ class BuildCommand extends Command {
     final output = argResults['output'] as String? ?? 'build/web';
     print('Building for web...');
     final process = await Process.start('dart', [
-      'pub',
-      'global',
       'run',
-      'webdev',
+      'webdev:webdev',
       'build',
       '-o',
       'web:$output',

@@ -112,9 +112,6 @@ class CreateCommand extends Command {
     await runProcess(Platform.executable, ['pub', 'get'], workingDirectory: projectAbsolutePath, verbose: false);
     print('[+] Dependencies resolved.');
 
-    // Check for webdev
-    _checkWebdev();
-
     final relativeProjectPath = p.relative(projectAbsolutePath, from: Directory.current.path);
     print('\n---------------------------------------------------------------------');
     print('--- Bullseye2D project "$appNamePascalCase" created successfully! ---');
@@ -178,21 +175,4 @@ class CreateCommand extends Command {
     return '1.0.0';
   }
 
-  void _checkWebdev() {
-    try {
-      final result = Process.runSync('dart', ['pub', 'global', 'run', 'webdev', '--version']);
-      if (result.exitCode == 0) {
-        print('[+] webdev is available.');
-      } else {
-        _printWebdevWarning();
-      }
-    } catch (_) {
-      _printWebdevWarning();
-    }
-  }
-
-  void _printWebdevWarning() {
-    print('\n[!] WARNING: webdev not found. To run on web you need it:');
-    print('    dart pub global activate webdev');
-  }
 }

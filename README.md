@@ -30,9 +30,6 @@ Ensure you have the Dart SDK (>= 3.7.2) installed:
 ## 2. Install the Bullseye2D CLI
 
 ```bash
-# webdev is requried to run the builds in the browser
-dart pub global activate webdev
-
 dart pub global activate bullseye2d
 ```
 

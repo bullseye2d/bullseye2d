@@ -47,10 +47,8 @@ class RunCommand extends Command {
 
     print('Starting webdev server on port $port...');
     final process = await Process.start('dart', [
-      'pub',
-      'global',
       'run',
-      'webdev',
+      'webdev:webdev',
       'serve',
       'web:$port',
       ...extraArgs,
