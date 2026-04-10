@@ -68,7 +68,7 @@ class BitmapFont {
 
   /// @nodoc
   /// Generates the font atlas from a [RasterizedFont] produced by [FontRasterizerBackend].
-  generateAtlasFromRasterized(RasterizedFont rasterized, bool antiAlias) {
+  void generateAtlasFromRasterized(RasterizedFont rasterized, bool antiAlias) {
     if (glyphs.isNotEmpty) {
       throw Exception("BitmapFont Atlas already generated!");
     }
@@ -110,7 +110,7 @@ class BitmapFont {
   /// This includes disposing of all associated [Texture] atlases and clearing
   /// the [glyphs] map. Call this when the font is no longer needed to free
   /// GPU memory.
-  dispose() {
+  void dispose() {
     for (final glyph in glyphs.values) {
       glyph.image?.dispose();
     }

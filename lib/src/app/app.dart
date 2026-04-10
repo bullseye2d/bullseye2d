@@ -245,7 +245,7 @@ abstract class App {
     }
   }
 
-  _updateGame() {
+  void _updateGame() {
     if (_killApp) return;
 
     if (loader.done) {
@@ -262,7 +262,7 @@ abstract class App {
     _windowBackend.dispose();
   }
 
-  _renderGame() {
+  void _renderGame() {
     if (_killApp) {
       _dispose();
       return;
@@ -290,7 +290,7 @@ abstract class App {
     _renderer.present();
   }
 
-  _validateUpdateTimer() {
+  void _validateUpdateTimer() {
     _timerSeq++;
     if (_suspended) return;
 

@@ -47,7 +47,7 @@ class Accelerometer {
   }
 
   /// Stops listening for device motion events and cleans up resources.
-  dispose() {
+  void dispose() {
     _backend.detach();
   }
 }

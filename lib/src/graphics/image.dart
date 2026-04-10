@@ -94,7 +94,7 @@ class Image {
   bool get isLoading => texture.isLoading;
 
   /// Disposes the image [texture].
-  dispose() => texture.dispose();
+  void dispose() => texture.dispose();
 
   /// Loads multiple frames from a single [Texture] (sprite sheet).
   ///

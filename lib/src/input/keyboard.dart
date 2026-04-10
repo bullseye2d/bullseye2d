@@ -58,13 +58,13 @@ class Keyboard {
   }
 
   /// @nodoc
-  onEndFrame() {
+  void onEndFrame() {
     _keyUp.clear();
     _keyHit.clear();
   }
 
   /// @nodoc
-  suspend() {
+  void suspend() {
     for (var item in _keyDown.entries) {
       if (item.value) {
         _keyUp[item.key] = true;
@@ -156,7 +156,7 @@ class Keyboard {
     return (index >= 0 && index < _charQueue.length) ? _charQueue.elementAt(index) : Char.empty;
   }
 
-  _onKeyEvent(_KeyEvent type, KeyCodes keyEnum, [String keyString = '']) {
+  void _onKeyEvent(_KeyEvent type, KeyCodes keyEnum, [String keyString = '']) {
     if (keyEnum != KeyCodes.Unknown) {
       switch (type) {
         case _KeyEvent.keyDown:

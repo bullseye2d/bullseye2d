@@ -106,19 +106,19 @@ void logFilter([String? filter]) {
   }
 }
 
-_info(List arguments) {
+void _info(List arguments) {
   _log(arguments, _Verbosity.info);
 }
 
-_error(List arguments) {
+void _error(List arguments) {
   _log(arguments, _Verbosity.error);
 }
 
-_die(List arguments) {
+void _die(List arguments) {
   _log(arguments, _Verbosity.die);
 }
 
-_warn(List arguments) {
+void _warn(List arguments) {
   _log(arguments, _Verbosity.warn);
 }
 
@@ -129,7 +129,7 @@ String _formatStack() {
   return '[${_logStack.join('::')}]';
 }
 
-_log(List arguments, [_Verbosity verbosity = _Verbosity.nothing]) {
+void _log(List arguments, [_Verbosity verbosity = _Verbosity.nothing]) {
   if (arguments.isEmpty) {
     if (_logStack.isNotEmpty) {
       _logStack.removeLast();

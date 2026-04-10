@@ -20,7 +20,7 @@ class Sound {
   var retriggerDelay = Duration.zero;
 
   /// Releases the audio resources held by this sound and resets its state.
-  dispose() {
+  void dispose() {
     bufferHandle?.dispose();
     bufferHandle = null;
     state = LoadingState.none;
