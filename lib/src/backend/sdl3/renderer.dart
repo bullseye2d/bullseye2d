@@ -32,9 +32,7 @@ class Sdl3RendererBackend implements RendererBackend {
   late final Pointer<SdlFColor> _nativeColorBuf;
   late final Pointer<Uint16> _nativeIndexBuf;
 
-  // Cached line width (SDL3 Dart bindings lack SDL_SetRenderDrawLineWidth)
-  // ignore: unused_field
-  double _lineWidth = 1.0;
+  bool _lineWidthWarned = false;
 
   // Projection matrix (orthographic) — applied CPU-side since SDL_Renderer has no shaders
   // Initialized to identity
@@ -143,9 +141,10 @@ class Sdl3RendererBackend implements RendererBackend {
 
   @override
   void setLineWidth(double w) {
-    _lineWidth = w;
-    // SDL3 does not expose SDL_SetRenderDrawLineWidth in the Dart bindings.
-    // Line width is handled at draw time where possible.
+    if (w != 1.0 && !_lineWidthWarned) {
+      _lineWidthWarned = true;
+      print('[bullseye2d] Warning: setLineWidth() is not supported on SDL3 (Dart bindings lack SDL_SetRenderDrawLineWidth)');
+    }
   }
 
   @override
