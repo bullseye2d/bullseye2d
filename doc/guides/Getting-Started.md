@@ -1,60 +1,102 @@
-# Create a new application
+# Getting Started
 
-To start a new `Bullseye2D` application, run the following command:
+## Prerequisites
 
+Ensure you have the **Dart SDK** (>= 3.7.2) installed:
+- https://dart.dev/get-dart
+
+Install the **Bullseye2D CLI**:
 ```bash
-bullseye2d create ./my_new_game
+dart pub global activate bullseye2d
 ```
 
-You will be prompted to enter a location where you want to create the new app. A directory will be created for you and it will also be the project name.
-
-The name should be all lowercase, with underscores to separate words, just_like_this. Use only basic Latin letters and Arabic digits: `a-z0-9_`. 
-
-When the project was successfuly created navigate into the directory and start the webserver:
+## Create a new project
 
 ```bash
-cd ../my_new_game
-webdev serve
+bullseye2d create ./my_game
+cd ./my_game
 ```
 
-Open your browser and go to: `http://localhost:8080`.
+This creates a project with the following structure:
 
-<details>
-<summary>
+```
+my_game/
+  assets/              # Shared assets (fonts, images, sounds)
+    fonts/roboto/      # Default font included
+  lib/
+    game.dart          # Your game code
+  web/
+    index.html         # Web page with canvas
+    main.dart          # Web entry point
+    assets/            # Symlink to ../assets
+  bin/
+    main.dart          # SDL3 entry point
+  pubspec.yaml
+```
 
-**Customizing `webdev serve`:**
+Your game logic goes in `lib/game.dart`. Both `web/main.dart` and `bin/main.dart` import it, so you write your game once and run it anywhere.
 
-</summary>
-<content>
+## Run on web
 
 ```bash
-# Automatically refresh browser when the app was rebuild
-webdev serve --auto refresh
-
-# Specify a port
-webdev serve web:8081
-
-# Specify a hostname to make it accessible on your local network
-webdev serve --hostname=0.0.0.0
-
-# Disable live reload
-webdev serve --no-live-reload
-
-# Enable debugging features for Dart DevTools
-webdev serve --debug
+bullseye2d run web
 ```
 
-Refer to the [**webdev**](https://dart.dev/tools/webdev) documentation for more options: `webdev serve --help`.
-
-  </content>
-</details>
-
-# Production Builds
-
-When you're ready to deploy your application, you'll want to create an optimized production build.
+Open your browser at `http://localhost:8080`.
 
 ```bash
-# By default that generates an optimized production build in the `build` folder
-webdev build
+# Specify a different port
+bullseye2d run web --port 9090
 ```
 
+You can also pass additional arguments to the underlying `webdev serve`:
+
+```bash
+# Automatically refresh browser when the app was rebuilt
+bullseye2d run web -- --auto refresh
+```
+
+## Run with SDL3
+
+```bash
+bullseye2d run sdl3
+```
+
+This opens a desktop window using SDL3.
+
+## Production Builds
+
+### Web
+
+```bash
+bullseye2d build web
+```
+
+This generates an optimized production build in the `build/` folder.
+
+### SDL3
+
+```bash
+bullseye2d build sdl3
+```
+
+This compiles an executable and bundles everything needed to distribute:
+
+```
+build/sdl3/
+  my_game           # (or my_game.exe on Windows)
+  assets/           # Bundled assets
+  libSDL3.so        # SDL3 shared libraries (auto-bundled)
+  libSDL3_image.so
+  libSDL3_mixer.so
+  libSDL3_ttf.so
+```
+
+## Desktop: SDL3
+
+SDL3 builds use SDL3 for rendering, audio, and input. The required SDL3 shared libraries are **included in the repository** -- no manual setup required.
+
+- `bullseye2d run sdl3` automatically configures library paths for development
+- `bullseye2d build sdl3` bundles the libraries alongside the compiled executable
+
+The SDL3 renderer uses SDL3's GPU abstraction, which auto-selects the best graphics backend for each platform (D3D12/Vulkan on Windows, Metal/Vulkan on macOS, Vulkan/OpenGL on Linux).

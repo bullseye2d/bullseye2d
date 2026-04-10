@@ -28,8 +28,13 @@ extension ColorExtension on Color {
   }
 }
 
-Color colorFromInt(int vol) {
-  return Color(1.0, 1.0, 1.0, 1.0);
+Color colorFromInt(int value) {
+  return Color(
+    (value & 0xFF) / 255.0,
+    ((value >> 8) & 0xFF) / 255.0,
+    ((value >> 16) & 0xFF) / 255.0,
+    ((value >> 24) & 0xFF) / 255.0,
+  );
 }
 
 /// @nodoc

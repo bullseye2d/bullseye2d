@@ -1,6 +1,5 @@
 import 'package:bullseye2d/bullseye2d.dart';
-import 'package:web/web.dart' show CanvasRenderingContext2D, TextMetrics, HTMLCanvasElement;
-import 'dart:js_interop';
+import 'package:bullseye2d/src/backend/backend.dart' show RendererBackend, FontRasterizerBackend, RasterizedFont;
 
 /// @nodoc
 class Glyph {
@@ -19,8 +18,6 @@ class Glyph {
 ///
 /// Use [ResourceManager.loadFont] to create and load `BitmapFont` instances.
 class BitmapFont {
-  static const int _cellPadding = 1;
-
   /// A string containing the default set of printable ASCII characters (codes 32-126).
   ///
   /// This set is commonly used for basic text rendering.
@@ -34,9 +31,9 @@ class BitmapFont {
   /// Generated with: `"${String.fromCharCodes(Iterable.generate(127-32, (r) => r + 32))}${String.fromCharCodes(Iterable.generate(256-160, (r) => r + 160))}"`
   static const String extendedAscii =
       defaultAscii +
-      r""" ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ""";
+      r""" ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ""";
 
-  final GL2 _gl;
+  final RendererBackend _renderer;
 
   final List<Texture> _textures = [];
 
@@ -50,8 +47,7 @@ class BitmapFont {
 
   /// The base vertical spacing (line height) for the font, in pixels.
   ///
-  /// This value is determined from the font's metrics during atlas generation
-  /// (specifically, `fontBoundingBoxAscent + fontBoundingBoxDescent` of a space character).
+  /// This value is determined from the font's metrics during atlas generation.
   var leadingBase = 0.0;
 
   /// A multiplier applied to [leadingBase] to adjust the final line spacing.
@@ -67,140 +63,45 @@ class BitmapFont {
   /// while values less than `1.0` decrease it.
   var tracking = 1.0;
 
-  /// Creates a new [BitmapFont] instance.
-  ///
-  /// Typically, you would use [ResourceManager.loadFont] instead of
-  /// constructing this directly.
-  ///
-  /// - [_gl]: The WebGL2 rendering context.
-  BitmapFont(this._gl);
+  /// @nodoc
+  BitmapFont(this._renderer);
 
   /// @nodoc
-  generateAtlas(String fontName, double size, bool antiAlias, String charSet) async {
+  /// Generates the font atlas from a [RasterizedFont] produced by [FontRasterizerBackend].
+  generateAtlasFromRasterized(RasterizedFont rasterized, bool antiAlias) {
     if (glyphs.isNotEmpty) {
       throw Exception("BitmapFont Atlas already generated!");
     }
 
-    final canvas = HTMLCanvasElement();
-    final ctx = canvas.getContext('2d') as CanvasRenderingContext2D?;
-    if (ctx == null) {
-      throw Exception("Could not create 2D Canvas for font atlas generation");
-    }
+    leadingBase = rasterized.lineHeight;
 
-    int maxWidth = 0;
-    int maxHeight = 0;
+    if (rasterized.atlasWidth == 0 || rasterized.atlasHeight == 0) return;
 
-    ctx.font = '${size}px $fontName';
-    ctx.textBaseline = 'alphabetic';
+    final texture = Texture.create(
+      renderer: _renderer,
+      pixelData: rasterized.atlasPixels,
+      width: rasterized.atlasWidth,
+      height: rasterized.atlasHeight,
+      textureFlags: (antiAlias ? TextureFlags.filter : 0) | TextureFlags.mipmap | TextureFlags.clampST,
+    );
+    _textures.add(texture);
 
-    final glyphMetrics = <int, TextMetrics>{};
-    final spaceMetrics = ctx.measureText(" ");
-
-    leadingBase = spaceMetrics.fontBoundingBoxAscent + spaceMetrics.fontBoundingBoxDescent;
-
-    for (final char in charSet.runes) {
-      final charStr = String.fromCharCode(char);
-      final metrics = ctx.measureText(charStr);
-      if (metrics.width > 0) {
-        glyphMetrics[char] = metrics;
-
-        //NOTE: I'm adding a few pixels to the width/height, because some fonts get cut on the edge. Could be that
-        // there is an error in my calculations, but could also be the case that the font metrics are not
-        // 100% accurate. Need to investigate furhter!
-        final charWidth = 2 + metrics.actualBoundingBoxLeft.abs().ceil() + metrics.actualBoundingBoxRight.abs().ceil();
-        final charHeight = 2 + metrics.fontBoundingBoxAscent.abs().ceil() + metrics.fontBoundingBoxDescent.abs().ceil();
-
-        if (charWidth > maxWidth) maxWidth = charWidth;
-        if (charHeight > maxHeight) maxHeight = charHeight;
-      }
-    }
-
-    assert(maxHeight > 0);
-
-    final pivotY = 1.0 - (spaceMetrics.fontBoundingBoxAscent / maxHeight.toDouble());
-    final cellWidth = maxWidth + _cellPadding * 2;
-    final cellHeight = maxHeight + _cellPadding * 2;
-
-    final maxAtlasSize = (_gl.getParameter(GL.MAX_TEXTURE_SIZE) as JSNumber).toDartInt;
-
-    assert(cellWidth > 0 && cellHeight > 0);
-    assert(cellWidth < maxAtlasSize && cellHeight < maxAtlasSize);
-
-    final allCharCodes = glyphMetrics.keys.toList();
-    final maxCols = maxAtlasSize ~/ cellWidth;
-    final maxRows = maxAtlasSize ~/ cellHeight;
-
-    assert(maxCols > 0 && maxRows > 0);
-
-    int charIdx = 0;
-
-    while (charIdx < allCharCodes.length) {
-      int maxChars = min(allCharCodes.length - charIdx, maxCols * maxRows);
-      if (maxChars <= 0) break;
-
-      // Trying to keep textures sizes to a minimum (in general this is often for tha last atlas)
-      int cols = min(sqrt(maxChars * cellWidth.toDouble() / cellHeight.toDouble()).ceil(), maxCols);
-      int rows = min((maxChars / cols).ceil(), maxRows);
-
-      canvas.width = min(nextPowerOfTwo(cols * cellWidth), maxAtlasSize);
-      canvas.height = min(nextPowerOfTwo(rows * cellHeight), maxAtlasSize);
-
-      assert(cellWidth < canvas.width && cellHeight < canvas.height);
-
-      cols = canvas.width ~/ cellWidth;
-      rows = canvas.height ~/ cellHeight;
-
-      maxChars = min(maxChars, cols * rows);
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.font = '${size}px $fontName';
-      ctx.fillStyle = '#ffffffff'.toJS;
-      ctx.imageSmoothingEnabled = antiAlias;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.textBaseline = 'alphabetic';
-
-      final glyphRect = <int, Rect<int>>{};
-      int colIdx = 0;
-      int rowIdx = 0;
-
-      for (int i = 0; i < maxChars; i++) {
-        final charCode = allCharCodes[charIdx];
-        final charStr = String.fromCharCode(charCode);
-        final metrics = glyphMetrics[charCode]!;
-
-        final x = colIdx * cellWidth;
-        final y = rowIdx * cellHeight;
-        final advance = metrics.width;
-
-        final drawX = (x + _cellPadding + (metrics.actualBoundingBoxLeft).abs()).floor();
-        final drawY = (y + _cellPadding + (metrics.fontBoundingBoxAscent)).floor();
-
-        ctx.fillText(charStr, drawX.toDouble(), drawY.toDouble());
-
-        glyphs[charCode] = Glyph(image: null, advance: advance);
-        glyphRect[charCode] = Rect(x + _cellPadding, y + _cellPadding, maxWidth, maxHeight);
-
-        charIdx++;
-        colIdx++;
-        if (colIdx >= cols) {
-          colIdx = 0;
-          rowIdx++;
-        }
-      }
-
-      final imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data.toDart;
-      final texture = Texture.create(
-        gl: _gl,
-        pixelData: imageData.buffer.asUint8List(),
-        width: canvas.width,
-        height: canvas.height,
-        textureFlags: (antiAlias ? TextureFlags.filter : 0) | TextureFlags.mipmap | TextureFlags.clampST,
+    for (final entry in rasterized.glyphs.entries) {
+      final metrics = entry.value;
+      final rect = Rect<int>(
+        (metrics.u1 * rasterized.atlasWidth).round(),
+        (metrics.v1 * rasterized.atlasHeight).round(),
+        metrics.width.round(),
+        metrics.height.round(),
       );
-      _textures.add(texture);
-
-      for (final entry in glyphRect.entries) {
-        glyphs[entry.key]!.image = Image(texture: texture, sourceRect: entry.value, pivotX: 0.0, pivotY: pivotY);
-      }
+      // pivotY: position baseline correctly within glyph cell.
+      // ascent = distance from top of cell to baseline.
+      // This matches the original formula: 1.0 - (ascent / cellHeight)
+      final pivotY = 1.0 - (metrics.height > 0 ? rasterized.ascent / metrics.height : 0.0);
+      glyphs[entry.key] = Glyph(
+        image: Image(texture: texture, sourceRect: rect, pivotX: 0.0, pivotY: pivotY),
+        advance: metrics.advance,
+      );
     }
   }
 

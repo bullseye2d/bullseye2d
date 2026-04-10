@@ -1,6 +1,5 @@
 import 'package:bullseye2d/bullseye2d.dart';
-import 'package:web/web.dart' show ErrorEvent, FocusEvent, Event, HTMLCanvasElement, document, window;
-import 'dart:js_interop';
+import 'package:bullseye2d/src/backend/backend.dart';
 import 'dart:async';
 
 /// {@category App}
@@ -43,6 +42,8 @@ abstract class App {
   static late App instance;
 
   late final AppConfig _config;
+  late final WindowBackend _windowBackend;
+  late final RendererBackend _renderer;
   bool _killApp = false;
   bool _suspended = false;
   double _updateRate = 60.0;
@@ -96,19 +97,14 @@ abstract class App {
   /// progress tracking with the [loader].
   late final ResourceManager resources;
 
-  /// The HTML canvas element on which the game is rendered.
+  /// The current width of the game window/canvas in pixels.
   ///
-  /// This is the DOM canvas element for the game's visual output.
-  late final HTMLCanvasElement canvas;
-
-  /// The current width of the game canvas in pixels.
-  ///
-  /// This value is updated when the canvas resizes. See [onResize].
+  /// This value is updated when the window/canvas resizes. See [onResize].
   int width = 0;
 
-  /// The current height of the game canvas in pixels.
+  /// The current height of the game window/canvas in pixels.
   ///
-  /// This value is updated when the canvas resizes. See [onResize].
+  /// This value is updated when the window/canvas resizes. See [onResize].
   int height = 0;
 
   /// Creates a new `App` instance.
@@ -125,68 +121,80 @@ abstract class App {
 
     _config = config ??= AppConfig();
 
-    var root = document.querySelector(_config.canvasElement) as HTMLCanvasElement?;
-    if (root == null) {
-      die("Could not find canvas: $_config.canvasElement");
-      return;
-    }
+    // Create platform backends via the conditional-import factory
+    final factory = PlatformFactoryImpl();
+    _windowBackend = factory.createWindow(_config);
+    Platform.init(_windowBackend);
 
-    onError(ErrorEvent event) {
-      _killApp = true;
-    }
-
-    window.addEventListener('error', onError.toJS);
-
-    canvas = root;
     loader = Loader();
-    gamepad = Gamepad();
-    keyboard = Keyboard(canvas);
-    mouse = Mouse(canvas);
-    accel = Accelerometer(canvas, mouse, config.autoRequestAccelerometerPermission);
-    gfx = Graphics(canvas, batchCapacityInBytes: _config.gfxBatchCapacityInBytes);
-    audio = Audio();
-    resources = ResourceManager(gfx.gl, audio, loader);
 
-    canvas.addEventListener(
-      'focus',
-      (FocusEvent e) {
-        if (!_config.autoSuspend || !_suspended) {
-          return;
-        }
-        _suspended = false;
-        audio.resume();
-        onResume();
-        _validateUpdateTimer();
-      }.toJS,
+    // Input backends
+    final keyboardBackend = factory.createKeyboard(_windowBackend);
+    final mouseBackend = factory.createMouse(_windowBackend);
+    final gamepadBackend = factory.createGamepad();
+    final accelBackend = factory.createAccelerometer();
+
+    gamepad = Gamepad(gamepadBackend);
+    keyboard = Keyboard(keyboardBackend);
+    mouse = Mouse(mouseBackend);
+    accel = Accelerometer(accelBackend, mouse, config.autoRequestAccelerometerPermission);
+
+    // Audio backend
+    final audioBackend = factory.createAudio();
+    audio = Audio(audioBackend);
+
+    // Renderer
+    _renderer = factory.createRenderer(_windowBackend);
+    _renderer.init();
+    Texture.white = Texture.createWhite(_renderer);
+
+    gfx = Graphics(
+      _renderer,
+      batchCapacityInBytes: _config.gfxBatchCapacityInBytes,
+      width: _windowBackend.width,
+      height: _windowBackend.height,
     );
 
-    canvas.addEventListener(
-      'blur',
-      (FocusEvent e) {
-        if (!_config.autoSuspend || _suspended) {
-          return;
-        }
-        _suspended = true;
-        onSuspend();
-        audio.suspend();
-        keyboard.suspend();
-        mouse.suspend();
-        gamepad.suspend();
-      }.toJS,
-    );
+    // Resource manager with all backends
+    final imageLoader = factory.createImageLoader();
+    final fileLoader = factory.createFileLoader();
+    final fontRasterizer = factory.createFontRasterizer();
+    final storageBackend = factory.createStorage();
+    initFileBackend(fileLoader);
+    LocalStorage.init(storageBackend);
+    resources = ResourceManager(_renderer, imageLoader, fileLoader, fontRasterizer, audio, loader);
 
-    canvas.focus();
-    window.addEventListener(
-      'load',
-      (Event e) {
-        canvas.focus();
-      }.toJS,
-    );
+    _windowBackend.onFocus(() {
+      if (!_config.autoSuspend || !_suspended) {
+        return;
+      }
+      _suspended = false;
+      audio.resume();
+      onResume();
+      _validateUpdateTimer();
+    });
+
+    _windowBackend.onBlur(() {
+      if (!_config.autoSuspend || _suspended) {
+        return;
+      }
+      _suspended = true;
+      onSuspend();
+      audio.suspend();
+      keyboard.suspend();
+      mouse.suspend();
+      gamepad.suspend();
+    });
+
+    _windowBackend.focus();
 
     updateRate = 60;
 
-    gfx.setViewport(0, 0, canvas.width, canvas.height);
+    width = _windowBackend.width;
+    height = _windowBackend.height;
+    gfx.setViewport(0, 0, width, height);
     onCreate();
+    onResize(width, height);
     _renderGame();
     _validateUpdateTimer();
   }
@@ -203,51 +211,34 @@ abstract class App {
     _validateUpdateTimer();
   }
 
-  /// Shows the mouse cursor, optionally customizing its appearance with an image.
+  /// The display width of the window/canvas (CSS layout size on web, same as [width] on SDL3).
+  int get displayWidth => _windowBackend.displayWidth;
+
+  /// The display height of the window/canvas (CSS layout size on web, same as [height] on SDL3).
+  int get displayHeight => _windowBackend.displayHeight;
+
+  /// Sets the rendering surface size.
   ///
-  /// - [images]: An optional [Images] list
-  ///   to use as the custom cursor. If `null` or not provided, the default
-  ///   system cursor is shown.
-  /// - [frame]: The index of the image in the [images] list to use, if multiple
-  ///   frames are provided. Defaults to 0.
-  ///
-  /// The hotspot of the custom cursor is determined by the `pivotX` and `pivotY`
-  /// properties of the selected [Image].
-  ///
-  /// Example:
-  /// ```dart
-  /// late Images customPointer;
-  ///
-  /// @override
-  /// void onCreate() {
-  ///   customPointer = resources.loadImage("assets/pointer.png",
-  ///     pivotX: 0.0
-  ///     pivotY: 0.0
-  ///   );
-  ///   showMouse(customPointer);
-  /// }
-  /// ```
-  void showMouse([Images? images, int frame = 0]) async {
-    if (images == null) {
-      canvas.style.cursor = 'default';
-    } else {
-      var imageData = await encodeImageToDataURL(images, frame);
-      var cursorImage = images[frame];
-      int hotspotX = (cursorImage.pivotX * cursorImage.width).round();
-      int hotspotY = (cursorImage.pivotY * cursorImage.height).round();
-      canvas.style.cursor = 'url($imageData) $hotspotX $hotspotY, auto';
-    }
+  /// On web, this sets the canvas pixel resolution (canvas.width/height).
+  /// On SDL3, this resizes the window.
+  void setRenderSize(int w, int h) {
+    _windowBackend.setSize(w, h);
+  }
+
+  /// Shows the mouse cursor.
+  void showMouse([Images? images, int frame = 0]) {
+    _windowBackend.setCursorVisible(true);
   }
 
   /// Hides the mouse cursor.
   void hideMouse() {
-    canvas.style.cursor = 'none';
+    _windowBackend.setCursorVisible(false);
   }
 
   void _validateDeviceWindow() {
-    var notify = (canvas.width != width || canvas.height != height);
-    width = canvas.width;
-    height = canvas.height;
+    var notify = (_windowBackend.width != width || _windowBackend.height != height);
+    width = _windowBackend.width;
+    height = _windowBackend.height;
 
     if (notify) {
       onResize(width, height);
@@ -265,8 +256,17 @@ abstract class App {
     }
   }
 
+  void _dispose() {
+    audio.dispose();
+    _renderer.dispose();
+    _windowBackend.dispose();
+  }
+
   _renderGame() {
-    if (_killApp) return;
+    if (_killApp) {
+      _dispose();
+      return;
+    }
     _validateDeviceWindow();
     if (loader.done) {
       onRender();
@@ -287,12 +287,9 @@ abstract class App {
     }
 
     gfx.flush();
+    _renderer.present();
   }
 
-  // NOTE Do we really need a complex logic like this?
-  // Maybe we should go away with a single combined update/render method (the user still cann write
-  // his own seperated update/render logic on top). It only makes sense if the rendering would be
-  // too slow, which shouldnt be the case in 99% of the use cases nowadays.
   _validateUpdateTimer() {
     _timerSeq++;
     if (_suspended) return;
@@ -304,22 +301,22 @@ abstract class App {
 
     if (updateRate <= 0) {
       //updaterate = 0, go as fast as possible
-
-      animate(num highResTime) {
+      void animate() {
         if (_killApp) return;
         if (currentSeq != _timerSeq) return;
         if (_suspended) return;
+        if (!_windowBackend.pumpEvents()) { _killApp = true; _dispose(); return; }
 
         _updateGame();
         if (currentSeq != _timerSeq) return;
         if (_suspended) return;
 
-        window.requestAnimationFrame(FunctionToJSExportedDartFunction(animate).toJS);
+        _windowBackend.requestAnimationFrame(animate);
 
         _renderGame();
       }
 
-      window.requestAnimationFrame(FunctionToJSExportedDartFunction(animate).toJS);
+      _windowBackend.requestAnimationFrame(animate);
       return;
     }
 
@@ -328,20 +325,15 @@ abstract class App {
 
     timeElapsed() {
       if (_killApp) return;
-
-      if (currentSeq != _timerSeq) {
-        return;
-      }
-
-      if (_suspended) {
-        return;
-      }
+      if (currentSeq != _timerSeq) return;
+      if (_suspended) return;
+      if (!_windowBackend.pumpEvents()) { _killApp = true; _dispose(); return; }
 
       if (nextUpdate == 0) {
-        nextUpdate = window.performance.now();
+        nextUpdate = _windowBackend.now();
       }
 
-      final double now = window.performance.now();
+      final double now = _windowBackend.now();
 
       for (int i = 0; i < maxUpdates; ++i) {
         _updateGame();

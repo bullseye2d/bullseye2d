@@ -40,8 +40,10 @@ dartdoc:
     - 'package:bullseye2d/commands/command.dart'
     - 'package:bullseye2d/commands/command_runner.dart'
     - 'package:bullseye2d/commands/commands.dart'
+    - 'package:bullseye2d/commands/build_command.dart'
     - 'package:bullseye2d/commands/create_command.dart'
     - 'package:bullseye2d/commands/docs_command.dart'
     - 'package:bullseye2d/commands/examples_command.dart'
+    - 'package:bullseye2d/commands/run_command.dart'
   header:
     - "doc/html/header.html"

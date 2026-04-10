@@ -394,7 +394,7 @@ This means if you call `gfx.set2DProjection(width: 800, height: 600)`, your game
 
 **`onResize(int newWidth, int newHeight)`**
 
-The `App.onResize()` method is called automatically whenever the browser window (and thus the canvas) is resized.
+The `App.onResize()` method is called automatically whenever the window (or browser canvas) is resized.
 Its default implementation is:
 ```dart
 // Default App.onResize()
@@ -405,7 +405,7 @@ onResize(int width, int height) {
 ```
 This makes your game world pixel-perfectly match the canvas size.
 
-The `examples/web/common/app.dart` shows an example of a fixed virtual resolution approach. The browser will scale the canvas element itself, and your game renders to a fixed-size buffer.
+The `examples/web/common/app.dart` shows an example of a fixed virtual resolution approach. The window system handles the actual display size, and your game renders to a fixed-size virtual buffer.
 
 ## Performance: Batching
 

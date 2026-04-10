@@ -12,35 +12,29 @@ Ok, let's create a first simple application. Please make sure you have the Dart 
 
 Go to https://dart.dev/get-dart and install the Dart SDK (*Flutter is NOT requried*).
 
-## 2. Activate `webdev`
-
-From your terminal run the following command:
-```bash
-dart pub global activate webdev
-```
-
-## 3. Install `Bullseye2D`
+## 2. Install `Bullseye2D`
 
 Install the `Bullseye2D` CLI Tool:
 ```bash
 dart pub global activate bullseye2d
 ```
+
 </content>
 </details>
 
 ## Create the project
-To start a new project, run the following command from within the `bullseye2d` directory:
+To start a new project, run the following command:
 
 ```bash
 bullseye2d create ./hello_world
 ```
 
-The script will create a new `Bullseye2D` project for you and provides you with some basic template files.
+The script creates a new project with template files.
 
 <div class="note">
   <p><strong>Info: </strong>Instead of using the <em>Bullseye2D CLI</em>-Tool you
-    can also add bullseye2d to your project.
-    Please note, that in this case, you have to create the index.html and canvas element yourself.
+    can also add bullseye2d to your project manually.
+    Note that in that case, you'll need to create the HTML and canvas element yourself for web.
   </p>
 
   ```bash
@@ -48,30 +42,31 @@ The script will create a new `Bullseye2D` project for you and provides you with 
   ```
 </div>
 
-## Navigate into your new project directory:
+## Navigate into your project directory:
 
 ```bash
-cd ../hello_world
+cd ./hello_world
 ```
 
-## 3. Start the development server
-Now you can use `webdev` to run your application. When you work on your project, you can keep `webdev` running. Each time you change a file, it will automatically rebuild your application and refresh your browser.
+## Run your game
 
-Run it with:
+You can run on either platform:
 
 ```bash
-webdev serve
+# Web (opens in browser at http://localhost:8080)
+bullseye2d run web
+
+# SDL3 (opens a desktop window)
+bullseye2d run sdl3
 ```
 
-Now open your browser and go to `http://localhost:8080`. You should see the text "One hundred & eighty!" displayed.
+You should see the text "One hundred & eighty!" displayed.
 
-# Understanding the initial files
+# Understanding the project files
 
-## web/main.dart
+## lib/game.dart
 
-Let's explain some of the files, the project creator created for you.
-
-Your newly created project has a subfolder called `web/`. In that folder the file `main.dart` is located. This is the main entry point of your application. The project creator has created a simple class for you that renders the text you just saw in your Browser.
+This is your shared game code. Both web and SDL3 entry points import this file.
 
 ```dart
 import 'package:bullseye2d/bullseye2d.dart';
@@ -79,62 +74,79 @@ import 'package:bullseye2d/bullseye2d.dart';
 class HelloWorld extends App {
   late BitmapFont font;
 
+  HelloWorld([AppConfig? config]) : super(config);
+
   @override
-  onCreate() async {
-    font = resources.loadFont("fonts/roboto/Roboto-Regular.ttf", 96);
+  void onCreate() {
+    font = resources.loadFont("assets/fonts/roboto/Roboto-Regular.ttf", 96);
   }
 
   @override
-  onUpdate() {
-  }
+  void onUpdate() {}
 
   @override
-  onRender() {
+  void onRender() {
     gfx.clear(0, 0, 0);
-    gfx.drawText(font, "One hundred & eighty!", 
-      x: width / 2, 
-      y: height / 2, 
-      alignX: 0.5, 
+    gfx.drawText(font, "One hundred & eighty!",
+      x: width / 2,
+      y: height / 2,
+      alignX: 0.5,
       alignY: 0.5
     );
   }
 }
+```
 
-main() {
+Your game class extends the base [**App**](../topics/App-topic.html) class. A single import `'package:bullseye2d/bullseye2d.dart'` gives you access to all modules.
+
+The constructor accepts an optional `AppConfig` so each entry point can configure the app differently (e.g., SDL3 sets a window title and size).
+
+**`onCreate()`** is called once when the app starts. Here, it loads a `BitmapFont` from the shared `assets/` directory.
+
+**`onUpdate()`** is called every frame for game logic (currently empty).
+
+**`onRender()`** is called every frame for drawing. It clears the screen and draws centered text.
+
+## web/main.dart
+
+The web entry point -- simply imports and instantiates your game:
+
+```dart
+import 'package:hello_world/game.dart';
+
+void main() {
   HelloWorld();
 }
 ```
 
-As you can see, you have to create a class that extends the base [**App**](../topics/App-topic.html) class.
+## bin/main.dart
 
-One single import `'package:bullseye2d/bullseye2d.dart'` will import all modules of `Bullseye2D`.
+The SDL3 entry point. The same thing, but with window configuration:
 
-The demo project overrides three methods `onCreate`, `onUpdate`, and `onRender`.
+```dart
+import 'package:hello_world/game.dart';
+import 'package:bullseye2d/bullseye2d.dart';
 
-**`onCreate()`** is called once when the app starts. Here, it loads a `BitmapFont`. The  `assets/fonts/roboto/Roboto-Regular.ttf` file was copied by the `create_project.dart` script. The `assets`-folder is a god place to put all your assets in.
-
-**`onUpdate()`** is called every frame for game logic (currently empty).
-
-**`onRender()`** is called every frame for drawing. It clears the screen and draws text.
-
-**`main()`** is the entry point (like in any other `Dart`-Application, which creates an instance of your `HelloWorld` app.
+void main() {
+  HelloWorld(AppConfig(
+    title: 'HelloWorld',
+    width: 1280,
+    height: 720,
+  ));
+}
+```
 
 ## web/index.html
 
-Lets also have a look at the index.html file created for you:
+The HTML page for the web version:
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bullseye2D - HelloWorld</title>
     <script defer src="main.dart.js"></script>
-<style>
-<!-- some styles are in here -->
-</style>
 </head>
 <body>
   <div class="container">
@@ -144,29 +156,27 @@ Lets also have a look at the index.html file created for you:
 </html>
 ```
 
-The `index.html`-file needs to have a `Canvas Element`. `Bullseye2D` by default looks for id `gameCanvas`, but you can change that to anything you like, as long as you provide the `id` via an [**AppConfig**](../bullseye2d/AppConfig-class.html) object to your application.
-
-Please note the **`tabindex=1`** attribute. It makes the canvas element focusable, which is necessary for it to receive keyboard input. Without it, keyboard events might not be captured by your game.
-
-</content>
-</details>
-
-For now, let's rename the canvas in here to `theBigStage`:
-
-```html
-  <div class="container">
-    <canvas id="theBigStage" tabindex=1 width="1280" height="720"></canvas>
-  </div>
-```
-
-Then in `main.dart` you need to let your app know which canvas to use:
+The `index.html` needs a `Canvas Element`. Bullseye2D looks for id `gameCanvas` by default, but you can change it via `AppConfig`:
 
 ```dart
-main() {
-  var myConfig = AppConfig()
-    ..canvasElement = 'theBigStage';
+var myConfig = AppConfig()
+  ..canvasElement = 'theBigStage';
 
-  HelloWorld(myConfig);
-}
+HelloWorld(myConfig);
 ```
 
+Note the **`tabindex=1`** attribute -- it makes the canvas focusable so it can receive keyboard input.
+
+## assets/
+
+The `assets/` directory at the project root is where all your game assets go (images, fonts, sounds). It's shared between web and SDL3:
+
+- **Web**: A symlink `web/assets -> ../assets` makes them accessible to webdev
+- **SDL3**: `Sdl3FileBackend` resolves paths relative to the working directory (during development) or the executable location (for compiled builds)
+
+Use `assets/` as a prefix in your code:
+```dart
+resources.loadFont("assets/fonts/roboto/Roboto-Regular.ttf", 96);
+resources.loadImage("assets/player.png");
+resources.loadSound("assets/audio/shoot.wav");
+```

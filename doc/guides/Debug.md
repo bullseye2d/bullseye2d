@@ -78,7 +78,7 @@ This could be of use if you're looking for a message in your code, but can't rem
 
 ## Verbosity
 
-There are different verbosity levels of `log` functions. They use the build in levels of the browser, so you can also filter them in your developer console.
+There are different verbosity levels of `log` functions. On web, these map to browser console levels so you can filter them in the developer console. On SDL3, they print to stdout/stderr.
 
 
 | Function     | Description                                                                             |
@@ -97,5 +97,5 @@ To manually trigger a breakpoint from code you can just call the `debugger` func
 debugger():
 ```
 
-Some of these functions can also be achieved with the developer tools of your browser, but sometimes it's just easier to control it trough code.
+Some of these functions can also be achieved with the developer tools of your browser (on web) or a debugger (on SDL3), but sometimes it's just easier to control it through code.
 

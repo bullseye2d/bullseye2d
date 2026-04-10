@@ -114,7 +114,7 @@ class Loader {
   }
 
   /// Clears all tracked items from the loader.
-  reset() {
+  void reset() {
     _items.clear();
   }
 

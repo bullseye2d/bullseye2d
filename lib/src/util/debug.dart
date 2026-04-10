@@ -1,7 +1,7 @@
 import 'package:bullseye2d/bullseye2d.dart';
-import 'package:web/web.dart';
-import 'dart:js_interop';
-import 'dart:js_util'; // ignore: deprecated_member_use
+import '../backend/debug_output_stub.dart'
+    if (dart.library.io) '../backend/sdl3/debug_output.dart'
+    if (dart.library.js_interop) '../backend/web/debug_output.dart';
 export 'dart:developer' show debugger;
 
 //TODO: put everything in Logger class, but exposed global log method for easier usaage :)
@@ -54,19 +54,19 @@ final die = VarargsFunction(_die) as dynamic;
 
 /// {@category Debug}
 /// Clears the tag stack
-logReset() {
+void logReset() {
   _logStack.clear();
 }
 
 /// {@category Debug}
 /// Disables all logging output
-logOff() {
+void logOff() {
   logFilter("!");
 }
 
 /// {@category Debug}
 /// Enables all logging output
-logOn() {
+void logOn() {
   logFilter("");
 }
 
@@ -75,7 +75,7 @@ logOn() {
 ///
 /// If set to true it shows the location from where the log message
 /// is called from.
-logEnableStacktrace(bool enable) {
+void logEnableStacktrace(bool enable) {
   _logStackTrace = enable;
 }
 
@@ -88,7 +88,7 @@ logEnableStacktrace(bool enable) {
 ///     this exact string will be shown.
 ///   - If non-empty and starting with `!`, only log messages *not* containing
 ///     the rest of the string (after `!`) will be shown (inverse filtering).
-logFilter([String? filter]) {
+void logFilter([String? filter]) {
   if (filter == null || filter.isEmpty) {
     _filterText = '';
     _filterInverse = false;
@@ -226,45 +226,21 @@ _log(List arguments, [_Verbosity verbosity = _Verbosity.nothing]) {
   }
 
   if (shouldPrintLog && potentialOutputForFilter.trim().isNotEmpty) {
-    final List<JSAny?> argsToLog = [];
+    final parts = <dynamic>[];
+    if (currentStackPrefix.isNotEmpty) parts.add(currentStackPrefix);
+    if (firstArgStringContent.isNotEmpty) parts.add(firstArgStringContent);
+    parts.addAll(remainingArgs);
 
-    if (currentStackPrefix.isNotEmpty) {
-      argsToLog.add(currentStackPrefix.toJS);
-    }
+    final method = switch (verbosity) {
+      _Verbosity.error || _Verbosity.die => 'error',
+      _Verbosity.warn => 'warn',
+      _Verbosity.info => 'info',
+      _Verbosity.nothing => 'log',
+    };
 
-    if (firstArgStringContent.isNotEmpty) {
-      argsToLog.add(firstArgStringContent.toJS);
-    }
+    debugOutput(parts, method);
 
-    for (final arg in remainingArgs) {
-      argsToLog.add(jsify(arg));
-    }
-
-    String consoleMethod;
-    switch (verbosity) {
-      case _Verbosity.error:
-      case _Verbosity.die:
-        consoleMethod = 'error';
-        break;
-
-      case _Verbosity.warn:
-        consoleMethod = 'warn';
-        break;
-
-      case _Verbosity.info:
-        consoleMethod = 'info';
-        break;
-
-      case _Verbosity.nothing:
-        consoleMethod = 'log';
-        break;
-    }
-
-    callMethod(console, consoleMethod, argsToLog);
     if (verbosity == _Verbosity.die) {
-      // this will ensure that even if a die/exception is thrown from within
-      // an async thread it will still stop execution of the app
-      // debugger();
       throw Exception("Critical Error!");
     }
   }

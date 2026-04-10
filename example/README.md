@@ -1,23 +1,41 @@
 # Bullseye2D Examples
 
-Bullseye2D comes with a few demos and examples. Feel free to enjoy them and checkout the source to learn from.
+Bullseye2D comes with demos that run on both web and SDL3 desktop from the same source code.
 
-You can either explore them on our website at [bullseye2d.org/demos](https://bullseye2d.org/demos) or you can run them locally:
+## Web
 
-## Clone the Repository:
+Explore them on our website at [bullseye2d.org/demos](https://bullseye2d.org/demos) or run locally:
 
-If you haven't already, clone the main Bullseye2D repository:
 ```bash
 git clone https://github.com/bullseye2d/bullseye2d.git
-cd bullseye2d
-cd example
+cd bullseye2d/example
 dart pub get
-webdev serve
+bullseye2d run web
 ```
 
-Open your web browser and navigate to the URL provided by the `serve` command (e.g., `http://localhost:8080`). You should see an index page linking to the different demos.
+Open your browser at `http://localhost:8080`.
 
-# More examples
+## SDL3 (Desktop)
+
+```bash
+cd bullseye2d/example
+dart pub get
+bullseye2d run sdl3 hello_world
+```
+
+You can also start a specific demo directly:
+```bash
+dart run bin/main.dart hello_world
+dart run bin/main.dart sprites
+dart run bin/main.dart input
+dart run bin/main.dart music_player
+```
+
+## Source Code
+
+All demo logic is in [lib/demos/](lib/demos/) — shared between web and SDL3 with zero duplication.
+
+## More Examples
 
 ### Soko64 - A tiny 64x64 Low-Res Sokoban game
 
@@ -26,11 +44,11 @@ Soko64 is a full sokoban game written in `Bullseye2D`:
 You can play it [here](https://joemanaco.itch.io/soko64).
 
 If you want to play around with the source, clone the repository:
-```base
+```bash
 git clone https://github.com/JochenHeizmann/soko64.git
 cd soko64
 dart pub get
-webdev serve
+bullseye2d run web
 ```
 
 The whole game is in a single source file, `web/main.dart`.

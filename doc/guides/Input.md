@@ -2,7 +2,7 @@
 
 The input module allows you to check for user input from different devices like keyboard, mouse, gamepads and touchscreens.
 
-`Bullseye2D` polls all information just before the update loop get called.
+`Bullseye2D` polls all information just before the update loop gets called.
 
 <div class="note warning">
   <p><strong>Note</strong> You should only use the input module inside <em>app.onUpdate</em>. In <em>onRender</em> the state is invalid.</p>
@@ -48,7 +48,7 @@ class KeyboardDemo extends App {
     // Reads and consumes the next char in the input queue.
     char = keyboard.getChar();
 
-    if (keyboard.keyUp(KeyCodes.W)) log("Ley 'W' was released!");
+    if (keyboard.keyUp(KeyCodes.W)) log("Key 'W' was released!");
 
     // Use keyboard.keyHitCountSinceLastFrame(KeyCodes.W) if you want to 
     // know if 'W' was hit multiple times
@@ -168,13 +168,14 @@ if (gamepad.countDevices() > 0) {
 ```
 
 <div class="note warning">
-  <p><strong>Note</strong> To detect gamepads the user needs to first press any buttons on them. This is usally required by the browser to
-    connect the game device to your context.</p>
+  <p><strong>Note</strong> On web, the user needs to press a button first for the browser to expose the gamepad. On SDL3, gamepads are detected automatically when connected.</p>
 </div>
 
 ## Accelerometer
 
 The [Accelerometer API](../bullseye2d/Accelerometer-class.html) provides device motion data. Values are normalized (1.0 typically means 1G of acceleration).
+
+**Note:** The accelerometer is only available on web/mobile. On SDL3 desktop, it returns 0.0 for all axes.
 | Property        | Description                           |
 |:----------------|:--------------------------------------|
 | `accel.x` | Acceleration along the X-axis.        |
@@ -184,8 +185,9 @@ The [Accelerometer API](../bullseye2d/Accelerometer-class.html) provides device 
 The orientation of these axes depends on the device's screen orientation.
 
 <div class="note warning">
-  <p><strong>Note</strong> On iOS you can only retrieve the accelerometer values if you first prompt the user for permission.<br/><br/>
-    If you want to automatcially prompt the user for permission on the first interaction (first click), then set <em>autoRequestAccelerometerPermission</em> to <em>true<em> in the app config. 
+  <p><strong>Note</strong> On mobile web (iOS/Android), you may need to prompt the user for permission before retrieving accelerometer values.<br/><br/>
+    If you want to automatically prompt the user for permission on the first interaction (first click), then set <em>autoRequestAccelerometerPermission</em> to <em>true</em> in the app config.<br/><br/>
+    On SDL3 desktop, accelerometer is not available and all values return 0.0. Future SDL3 mobile targets (iOS/Android) will support accelerometer via SDL3 sensors.
   </p>
 </div>
 
