@@ -94,5 +94,5 @@ bullseye2d docs --serve
 
 # Third-Party Licenses
 
-See [LICENSE](LICENSE) for the full text of all licenses, including third-party dependencies.
+See [LICENSE](https://github.com/bullseye2d/bullseye2d/blob/main/LICENSE) for the full text of all licenses, including third-party dependencies.
 
