@@ -1,3 +1,7 @@
+## 2.0.3
+
+- Use webdev as a project-level dev dependency instead of requiring global activation
+
 ## 2.0.2
 
 - Code Style and clean ups to get a better Pub Point Score. Also we got rid of js_util.
