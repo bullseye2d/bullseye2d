@@ -186,7 +186,7 @@ class Sdl3RendererBackend implements RendererBackend {
   }
 
   @override
-  void updateTexture(TextureHandle texture, int x, int y, int w, int h, Uint8List pixels) {
+  void updateTexture(TextureHandle texture, int x, int y, int w, int h, Uint8List pixels, int flags) {
     final nativeTex = texture as Sdl3TextureHandle;
     final rect = calloc<SdlRect>();
     rect.ref

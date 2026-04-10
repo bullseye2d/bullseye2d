@@ -235,24 +235,20 @@ class WebRendererBackend implements RendererBackend {
   }
 
   @override
-  void updateTexture(TextureHandle texture, int x, int y, int w, int h, Uint8List pixels) {
+  void updateTexture(TextureHandle texture, int x, int y, int w, int h, Uint8List pixels, int flags) {
     final webTex = texture as WebTextureHandle;
     gl.bindTexture(_GL.TEXTURE_2D, webTex.glTexture);
     gl.texSubImage2D(_GL.TEXTURE_2D, 0, x, y, w.toJS, h.toJS, _GL.RGBA.toJS, _GL.UNSIGNED_BYTE, pixels.toJS);
 
-    // Regenerate mipmaps if needed — caller should pass flags if desired
+    if (_hasFlag(flags, 0x2 /* mipmap */)) {
+      gl.generateMipmap(_GL.TEXTURE_2D);
+    }
   }
 
   @override
   void destroyTexture(TextureHandle texture) {
     final webTex = texture as WebTextureHandle;
     gl.deleteTexture(webTex.glTexture);
-  }
-
-  void regenerateMipmaps(TextureHandle texture) {
-    final webTex = texture as WebTextureHandle;
-    gl.bindTexture(_GL.TEXTURE_2D, webTex.glTexture);
-    gl.generateMipmap(_GL.TEXTURE_2D);
   }
 
   static bool _hasFlag(int flags, int flag) => (flags & flag) != 0;

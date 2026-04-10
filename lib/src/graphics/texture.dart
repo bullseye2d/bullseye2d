@@ -250,7 +250,7 @@ class Texture {
     }
 
     if (handle != null) {
-      _renderer.updateTexture(handle!, 0, 0, width, height, data);
+      _renderer.updateTexture(handle!, 0, 0, width, height, data, flags);
     }
 
     pixelData = Uint8List.fromList(data);

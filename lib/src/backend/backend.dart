@@ -84,7 +84,7 @@ abstract class RendererBackend {
 
   // Textures
   TextureHandle createTexture(int width, int height, Uint8List pixels, int flags);
-  void updateTexture(TextureHandle texture, int x, int y, int w, int h, Uint8List pixels);
+  void updateTexture(TextureHandle texture, int x, int y, int w, int h, Uint8List pixels, int flags);
   void destroyTexture(TextureHandle texture);
 
   /// Draw a batch of pre-transformed geometry.
