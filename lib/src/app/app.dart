@@ -305,7 +305,11 @@ abstract class App {
         if (_killApp) return;
         if (currentSeq != _timerSeq) return;
         if (_suspended) return;
-        if (!_windowBackend.pumpEvents()) { _killApp = true; _dispose(); return; }
+        if (!_windowBackend.pumpEvents()) {
+          _killApp = true;
+          _dispose();
+          return;
+        }
 
         _updateGame();
         if (currentSeq != _timerSeq) return;
@@ -327,7 +331,11 @@ abstract class App {
       if (_killApp) return;
       if (currentSeq != _timerSeq) return;
       if (_suspended) return;
-      if (!_windowBackend.pumpEvents()) { _killApp = true; _dispose(); return; }
+      if (!_windowBackend.pumpEvents()) {
+        _killApp = true;
+        _dispose();
+        return;
+      }
 
       if (nextUpdate == 0) {
         nextUpdate = _windowBackend.now();

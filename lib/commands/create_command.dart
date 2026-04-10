@@ -104,20 +104,12 @@ class CreateCommand extends Command {
       print('[+] Asset symlink created (web/assets -> ../assets).');
     } catch (e) {
       // Symlink failed (e.g., Windows without developer mode) — fall back to copy
-      await _copyDirectory(
-        p.join(projectAbsolutePath, 'assets'),
-        p.join(projectAbsolutePath, 'web', 'assets'),
-      );
+      await _copyDirectory(p.join(projectAbsolutePath, 'assets'), p.join(projectAbsolutePath, 'web', 'assets'));
       print('[+] Assets copied to web/assets (symlink not supported on this system).');
     }
 
     // Run dart pub get
-    await runProcess(
-      Platform.executable,
-      ['pub', 'get'],
-      workingDirectory: projectAbsolutePath,
-      verbose: false,
-    );
+    await runProcess(Platform.executable, ['pub', 'get'], workingDirectory: projectAbsolutePath, verbose: false);
     print('[+] Dependencies resolved.');
 
     // Check for webdev

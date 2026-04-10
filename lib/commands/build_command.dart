@@ -47,11 +47,15 @@ class BuildCommand extends Command {
 
     final output = argResults['output'] as String? ?? 'build/web';
     print('Building for web...');
-    final process = await Process.start(
-      'dart',
-      ['pub', 'global', 'run', 'webdev', 'build', '-o', 'web:$output'],
-      mode: ProcessStartMode.inheritStdio,
-    );
+    final process = await Process.start('dart', [
+      'pub',
+      'global',
+      'run',
+      'webdev',
+      'build',
+      '-o',
+      'web:$output',
+    ], mode: ProcessStartMode.inheritStdio);
 
     final exitCode = await process.exitCode;
     if (exitCode != 0) exit(exitCode);
@@ -76,11 +80,7 @@ class BuildCommand extends Command {
 
     // Compile executable
     print('Compiling executable...');
-    await runProcess(
-      Platform.executable,
-      ['compile', 'exe', 'bin/main.dart', '-o', exePath],
-      verbose: false,
-    );
+    await runProcess(Platform.executable, ['compile', 'exe', 'bin/main.dart', '-o', exePath], verbose: false);
     print('[+] Compiled: $exePath');
 
     // Bundle assets

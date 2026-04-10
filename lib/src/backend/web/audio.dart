@@ -177,9 +177,7 @@ class WebAudioBackend implements AudioBackend {
     var ch = _channels[channel];
     if (ch.state != ChannelState.playing) return;
 
-    ch.offset =
-        (ch.offset + (audioContext.currentTime - ch.startTime) * ch.rate) %
-        ch.sound!.buffer.duration;
+    ch.offset = (ch.offset + (audioContext.currentTime - ch.startTime) * ch.rate) % ch.sound!.buffer.duration;
 
     ch.sourceNode?.onended = null;
     try {

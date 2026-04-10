@@ -46,11 +46,15 @@ class RunCommand extends Command {
     }
 
     print('Starting webdev server on port $port...');
-    final process = await Process.start(
-      'dart',
-      ['pub', 'global', 'run', 'webdev', 'serve', 'web:$port', ...extraArgs],
-      mode: ProcessStartMode.inheritStdio,
-    );
+    final process = await Process.start('dart', [
+      'pub',
+      'global',
+      'run',
+      'webdev',
+      'serve',
+      'web:$port',
+      ...extraArgs,
+    ], mode: ProcessStartMode.inheritStdio);
 
     final exitCode = await process.exitCode;
     if (exitCode != 0) exit(exitCode);

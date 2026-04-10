@@ -4,8 +4,8 @@ import 'package:bullseye2d/src/app/app_config.dart';
 import 'package:bullseye2d/src/graphics/blendmode.dart';
 
 export 'stub.dart'
-  if (dart.library.io) 'sdl3/platform_factory.dart'
-  if (dart.library.js_interop) 'web/platform_factory.dart';
+    if (dart.library.io) 'sdl3/platform_factory.dart'
+    if (dart.library.js_interop) 'web/platform_factory.dart';
 
 // ---------------------------------------------------------------------------
 // Primitive types for draw calls
