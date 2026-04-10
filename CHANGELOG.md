@@ -1,3 +1,7 @@
+## 2.0.2
+
+- Code Style and clean ups to get a better Pub Point Score. Also we got rid of js_util.
+
 ## 2.0.1
 
 - See [Migration Guide](doc/guides/Migration-2.0.md) for upgrade instructions from 1.x
