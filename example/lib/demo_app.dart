@@ -13,7 +13,7 @@ class DemoApp extends App {
   int activeIndex = 0;
 
   DemoApp({AppConfig? config, String initialDemo = 'hello_world'})
-      : super(config) {
+    : super(config) {
     const demoNames = {
       'hello_world': 0,
       'sprites': 1,
@@ -52,7 +52,10 @@ class DemoApp extends App {
     setRenderSize(virtualWidth, virtualHeight);
 
     gfx.setViewport(0, 0, virtualWidth, virtualHeight);
-    gfx.set2DProjection(width: virtualWidth.toDouble(), height: virtualHeight.toDouble());
+    gfx.set2DProjection(
+      width: virtualWidth.toDouble(),
+      height: virtualHeight.toDouble(),
+    );
 
     mouse.scaleX = (displayWidth == 0) ? 1.0 : virtualWidth / displayWidth;
     mouse.scaleY = (displayHeight == 0) ? 1.0 : virtualHeight / displayHeight;
