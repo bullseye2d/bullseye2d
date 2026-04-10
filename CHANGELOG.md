@@ -1,3 +1,7 @@
+## 2.0.1
+
+- See [Migration Guide](doc/guides/Migration-2.0.md) for upgrade instructions from 1.x
+
 ## 2.0.0
 
 - **Multi-platform support**: Bullseye2D now runs on Windows, Mac, and Linux in addition to web browsers. It uses SDL3 for the desktop targets.
