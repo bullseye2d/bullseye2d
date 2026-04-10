@@ -83,7 +83,7 @@ bullseye2d run sdl3
 
 You can also enjoy the demos on our [website](https://bullseye2d.org/demos).
 
-Source code: [example/web](https://github.com/bullseye2d/bullseye2d/blob/main/example/web)
+Source code: [example](https://github.com/bullseye2d/bullseye2d/blob/main/example)
 
 # Learning
 `Bullseye2D` comes with comprehensive documentation. Read it [online](https://bullseye2d.org/docs) or serve it locally:
