@@ -6,13 +6,9 @@ class MusicPlayerDemo extends Scene {
   static const String musicTitle = "Drop That Cat - Jochen Heizmann";
   static const int noOfBands = 160;
 
-  @override
-  String get name => 'Music Player';
-
   late BitmapFont font;
   late AudioVisualizer visualizer;
   List<double> bands = List.filled(noOfBands, 0.0);
-  int counter = 0;
 
   MusicPlayerDemo(super.app);
 
@@ -20,11 +16,6 @@ class MusicPlayerDemo extends Scene {
   void onCreate() {
     font = resources.loadFont("assets/fonts/wireone/WireOne-Regular.ttf", 196);
     visualizer = app.audio.initMusicVisualizer(1024);
-  }
-
-  @override
-  void onLeave() {
-    app.audio.stopMusic();
   }
 
   @override
@@ -44,8 +35,6 @@ class MusicPlayerDemo extends Scene {
   void onRender() {
     double avg = bands.average();
     gfx.clear(0.1 + 0.05 * avg, 0.05 + 0.05 * avg, 0.1 + 0.4 * avg, 1);
-
-    counter++;
 
     // Draw the visualizer
     if (visualizer.isSupported) {

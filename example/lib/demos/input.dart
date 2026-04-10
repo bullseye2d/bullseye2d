@@ -2,9 +2,6 @@ import 'package:bullseye2d/bullseye2d.dart';
 import '../demo_app.dart';
 
 class InputDemo extends Scene {
-  @override
-  String get name => 'Input';
-
   late BitmapFont font;
   late List<double> xboxControllerPoints;
 

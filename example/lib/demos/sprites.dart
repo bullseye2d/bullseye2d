@@ -4,9 +4,6 @@ import '../demo_app.dart';
 class SpritesDemo extends Scene {
   static const zoomFactor = 7.0;
 
-  @override
-  String get name => 'Sprites';
-
   late BitmapFont font;
   late Images walker;
   double frame = 0;

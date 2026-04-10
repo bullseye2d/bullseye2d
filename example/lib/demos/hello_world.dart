@@ -2,9 +2,6 @@ import 'package:bullseye2d/bullseye2d.dart';
 import '../demo_app.dart';
 
 class HelloWorldDemo extends Scene {
-  @override
-  String get name => 'Hello World';
-
   late BitmapFont font;
   late Images pointer;
   int frameCounter = 0;

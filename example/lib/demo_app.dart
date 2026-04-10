@@ -61,7 +61,6 @@ class DemoApp extends App {
 
 abstract class Scene {
   final DemoApp app;
-  String get name;
 
   Scene(this.app);
 
@@ -76,6 +75,4 @@ abstract class Scene {
   void onCreate();
   void onUpdate();
   void onRender();
-  void onEnter() {}
-  void onLeave() {}
 }
