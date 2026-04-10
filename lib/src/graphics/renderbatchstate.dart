@@ -1,13 +1,13 @@
 part of 'graphics.dart';
 
-class RenderBatchState {
+class _RenderBatchState {
   BlendMode blendMode = BlendMode.alpha;
 
   double lineWidth = 1.0;
 
-  WebGLTexture? texture;
+  Texture? currentTexture;
 
-  _PrimitiveType? _primitiveType;
+  _BatchMode? batchMode;
 
   bool isScissorEnabled = false;
 

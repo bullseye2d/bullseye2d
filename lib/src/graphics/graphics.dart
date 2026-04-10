@@ -1,29 +1,41 @@
 // ignore_for_file: lines_longer_than_80_chars
 import 'package:bullseye2d/bullseye2d.dart';
-import 'package:web/web.dart'
-    show
-        ElementEventGetters,
-        Event,
-        HTMLCanvasElement,
-        WebGL2RenderingContext,
-        WebGLBuffer,
-        WebGLProgram,
-        WebGLRenderingContext,
-        WebGLShader,
-        WebGLUniformLocation,
-        WebGLVertexArrayObject,
-        WebGLTexture;
-import 'dart:js_interop';
+import 'package:bullseye2d/src/backend/backend.dart';
 import 'dart:typed_data';
 import 'package:vector_math/vector_math_64.dart';
 
 export 'dart:math' show min, Point, sqrt, sin, cos, pi;
 
-part 'glutil.dart';
-part 'primitivetype.dart';
 part 'renderbatchstate.dart';
 
-// TODO: Error Handling is still missing (especially lostGLContext and restoreGLContext Events)
+/// Internal batch mode, extending [PrimitiveType] with quad batching.
+///
+/// Quads are drawn as indexed triangles — this is an optimization detail
+/// hidden from the [RendererBackend].
+enum _BatchMode {
+  points,
+  lines,
+  lineStrip,
+  triangles,
+  quads,
+  triangleFan;
+
+  PrimitiveType toPrimitiveType() {
+    switch (this) {
+      case _BatchMode.points:
+        return PrimitiveType.points;
+      case _BatchMode.lines:
+        return PrimitiveType.lines;
+      case _BatchMode.lineStrip:
+        return PrimitiveType.lineStrip;
+      case _BatchMode.triangles:
+      case _BatchMode.quads:
+        return PrimitiveType.triangles;
+      case _BatchMode.triangleFan:
+        return PrimitiveType.triangleFan;
+    }
+  }
+}
 
 /// A simple object pool for Matrix3 instances to reduce GC pressure.
 ///
@@ -74,23 +86,9 @@ class Graphics {
   ///
   /// This class provides easy to use commands to render images and draw
   /// primitives.
-  late final GL2 gl;
+  final RendererBackend _renderer;
 
-  final HTMLCanvasElement _canvas;
-
-  final _renderState = RenderBatchState();
-
-  late final WebGLProgram _program;
-  late final int _positionAttributeLocation;
-  late final int _texcoordAttributeLocation;
-  late final int _colorAttributeLocation;
-
-  late final WebGLUniformLocation _projectionMatrixLocation;
-  late final WebGLUniformLocation _textureLocation;
-
-  late final WebGLVertexArrayObject _vao;
-  late final WebGLBuffer _interleavedBuffer;
-  late final WebGLBuffer _quadIndexBuffer;
+  final _renderState = _RenderBatchState();
 
   var _vertexCount = 0;
 
@@ -104,8 +102,9 @@ class Graphics {
   late final Float32List _batchedInterleavedData;
   late final ByteData _byteDataView;
 
-  var _lineWidthMin = 1.0;
-  var _lineWidthMax = 1.0;
+  /// Pre-computed quad indices for indexed drawing.
+  late final Uint16List _quadIndices;
+  static final Uint16List _emptyIndices = Uint16List(0);
 
   late final _MatrixPool _matrixPool;
   late Matrix3 _currentMatrix;
@@ -117,70 +116,25 @@ class Graphics {
   final _currentColor = Color(1.0, 1.0, 1.0, 1.0);
   int _encodedColor = 0xffffffff;
 
-  /// Initializes the graphics system with the given HTML canvas element.
-  ///
-  /// - [_canvas]: The [HTMLCanvasElement] to render to.
-  /// - [batchCapacityInBytes]: The initial capacity of the vertex buffer for
-  ///   batched rendering, in bytes. Larger values can improve performance by
-  ///   reducing draw calls but will consume more memory. Defaults to 65536 bytes (64KB).
-  ///
-  /// Typically, you don't instantiate this class yourself. Instead, you use
-  /// the `app.gfx` member provided by the [App] class.
-  Graphics(this._canvas, {int batchCapacityInBytes = 65536}) {
+  /// @nodoc
+  Graphics(this._renderer, {int batchCapacityInBytes = 65536, required int width, required int height}) {
     _batchCapacityInBytes = batchCapacityInBytes;
     _initialBatchCapacityQuads = _batchCapacityInBytes ~/ (_vertexSizeInBytes * 4);
     _currentBatchCapacityVertices = _initialBatchCapacityQuads * 4;
     _batchedInterleavedData = Float32List(_initialBatchCapacityQuads * 4 * _floatsPerVertex);
-
-    _canvas
-      ..onWebGlContextLost.listen((Event event) {
-        event.preventDefault();
-        warn("[webgl] :: context lost");
-      })
-      ..onWebGlContextRestored.listen((_) {
-        warn("[webgl] :: context restored");
-      });
-
-    var glContext = _canvas.getContext("webgl2", {"alpha": false} as dynamic);
-    if (glContext == null) throw Exception("Can't create WEBGL!");
-    gl = glContext as WebGL2RenderingContext;
 
     _byteDataView = _batchedInterleavedData.buffer.asByteData();
 
     _matrixPool = _MatrixPool(initialSize: 10);
     _currentMatrix = _matrixPool.get()..setIdentity();
 
-    _program = _createProgramFromSources(gl, vertexShaderSource, fragmentShaderSource)!;
-
-    _positionAttributeLocation = gl.getAttribLocation(_program, 'a_position');
-    _texcoordAttributeLocation = gl.getAttribLocation(_program, 'a_texcoord');
-    _colorAttributeLocation = gl.getAttribLocation(_program, 'a_color');
-
-    if (_positionAttributeLocation < 0 || _texcoordAttributeLocation < 0 || _colorAttributeLocation < 0) {
-      die('One or more attributes not found in the _program.');
-    }
-
-    _projectionMatrixLocation = gl.getUniformLocation(_program, 'u_projectionMatrix')!;
-    _textureLocation = gl.getUniformLocation(_program, 'u_texture')!;
-
-    _vao = gl.createVertexArray()!;
-    gl.bindVertexArray(_vao);
-
-    _interleavedBuffer = gl.createBuffer()!;
-    gl.bindBuffer(GL.ARRAY_BUFFER, _interleavedBuffer);
-
-    gl.bufferData(GL.ARRAY_BUFFER, (_batchedInterleavedData.lengthInBytes).toJS, GL.STREAM_DRAW);
-
-    _quadIndexBuffer = gl.createBuffer()!;
-    gl.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, _quadIndexBuffer);
-
+    // Pre-compute quad indices (0,1,2, 2,1,3, 4,5,6, 6,5,7, ...)
     final int maxQuads = _currentBatchCapacityVertices ~/ 4;
     final int maxIndices = maxQuads * 6;
-    final Uint16List quadIndices = Uint16List(maxIndices);
+    _quadIndices = Uint16List(maxIndices);
     for (int i = 0; i < maxQuads; ++i) {
       final int vIndex = i * 4;
-
-      quadIndices
+      _quadIndices
         ..[i * 6 + 0] = (vIndex + 0)
         ..[i * 6 + 1] = (vIndex + 1)
         ..[i * 6 + 2] = (vIndex + 2)
@@ -189,55 +143,17 @@ class Graphics {
         ..[i * 6 + 5] = (vIndex + 3);
     }
 
-    gl
-      ..bufferData(GL.ELEMENT_ARRAY_BUFFER, quadIndices.buffer.asUint8List().toJS, GL.STATIC_DRAW)
-      ..enableVertexAttribArray(_positionAttributeLocation)
-      ..vertexAttribPointer(_positionAttributeLocation, 2, GL.FLOAT, false, _vertexSizeInBytes, 0)
-      ..enableVertexAttribArray(_texcoordAttributeLocation)
-      ..vertexAttribPointer(
-        _texcoordAttributeLocation,
-        2,
-        GL.FLOAT,
-        false,
-        _vertexSizeInBytes,
-        2 * Float32List.bytesPerElement,
-      )
-      ..enableVertexAttribArray(_colorAttributeLocation)
-      ..vertexAttribPointer(
-        _colorAttributeLocation,
-        4,
-        GL.UNSIGNED_BYTE,
-        true,
-        _vertexSizeInBytes,
-        4 * Float32List.bytesPerElement,
-      )
-      ..useProgram(_program)
-      ..disable(GL.SCISSOR_TEST)
-      ..lineWidth(_renderState.lineWidth);
+    // Apply default blend mode
+    _renderer.setBlendMode(_renderState.blendMode);
+    _renderer.setLineWidth(_renderState.lineWidth);
 
-    final JSAny? param = gl.getParameter(GL.ALIASED_LINE_WIDTH_RANGE);
-    final Float32List lineWidthRange =
-        param.isA<JSFloat32Array>() ? (param as JSFloat32Array).toDart : Float32List.fromList([1.0, 1.0]);
-
-    _lineWidthMin = lineWidthRange[0];
-    _lineWidthMax = lineWidthRange[1];
-
-    set2DProjection(width: _canvas.clientWidth.toDouble(), height: _canvas.clientHeight.toDouble());
-
-    _renderState
-      ..isScissorEnabled = false
-      ..blendMode.apply(gl);
-    Texture.white = Texture.createWhite(gl);
+    set2DProjection(width: width.toDouble(), height: height.toDouble());
   }
 
-  /// Releases WebGL resources used by the graphics system.
+  /// Releases resources used by the graphics system.
   void dispose() {
     flush();
-    gl
-      ..deleteProgram(_program)
-      ..deleteVertexArray(_vao)
-      ..deleteBuffer(_interleavedBuffer)
-      ..deleteBuffer(_quadIndexBuffer);
+    _renderer.dispose();
   }
 
   /// Clears the drawing canvas with the specified color.
@@ -251,9 +167,7 @@ class Graphics {
   /// - [a]: Alpha component (0.0 to 1.0).
   void clear([double? r, double? g, double? b, double? a]) {
     flush();
-    gl
-      ..clearColor(r ?? _currentColor.r, g ?? _currentColor.g, b ?? _currentColor.b, a ?? _currentColor.a)
-      ..clear(GL.COLOR_BUFFER_BIT);
+    _renderer.clear(r ?? _currentColor.r, g ?? _currentColor.g, b ?? _currentColor.b, a ?? _currentColor.a);
   }
 
   /// Sets the current drawing color using individual RGBA components.
@@ -288,26 +202,21 @@ class Graphics {
   void setBlendMode(BlendMode mode) {
     if (_renderState.blendMode != mode) {
       flush();
-      _renderState
-        ..blendMode = mode
-        ..blendMode.apply(gl);
+      _renderState.blendMode = mode;
+      _renderer.setBlendMode(mode);
     }
   }
 
   /// Sets the width for lines drawn by [drawLine] and [drawLines].
   ///
-  /// The [width] is clamped to the range supported by the WebGL implementation.
+  /// The [width] is clamped to the range supported by the renderer.
   ///
   /// - [width]: The desired line width in pixels.
   void setLineWidth(double width) {
     if (_renderState.lineWidth != width) {
-      if (width < _lineWidthMin || width > _lineWidthMax) {
-        warn("LineWidth of $width not supported, Allowed ranges goes from $_lineWidthMin to $_lineWidthMax");
-      }
-
-      _renderState.lineWidth = width.clamp(_lineWidthMin, _lineWidthMax);
+      _renderState.lineWidth = width;
       flush();
-      gl.lineWidth(_renderState.lineWidth);
+      _renderer.setLineWidth(_renderState.lineWidth);
     }
   }
 
@@ -315,32 +224,17 @@ class Graphics {
   ///
   /// The viewport defines the area of the canvas where rendering will occur.
   ///
-  /// - [x]: The x-coordinate of the lower-left corner of the viewport.
-  /// - [y]: The y-coordinate of the lower-left corner of the viewport.
+  /// - [x]: The x-coordinate of the top-left corner of the viewport.
+  /// - [y]: The y-coordinate of the top-left corner of the viewport.
   /// - [width]: The width of the viewport.
   /// - [height]: The height of the viewport.
   void setViewport(int x, int y, int width, int height) {
-    final glY = _canvas.height - height - y;
-
     if (_renderState.viewport.x != x ||
-        _renderState.viewport.y != glY ||
+        _renderState.viewport.y != y ||
         _renderState.viewport.width != width ||
         _renderState.viewport.height != height) {
-      _renderState.viewport.set(x, glY, width, height);
-      gl.viewport(
-        _renderState.viewport.x,
-        _renderState.viewport.y,
-        _renderState.viewport.width,
-        _renderState.viewport.height,
-      );
-      if (_renderState.isScissorEnabled) {
-        gl.scissor(
-          _renderState.scissor.x,
-          _renderState.scissor.y,
-          _renderState.scissor.width,
-          _renderState.scissor.height,
-        );
-      }
+      _renderState.viewport.set(x, y, width, height);
+      _renderer.setViewport(x, y, width, height);
     }
   }
 
@@ -351,14 +245,12 @@ class Graphics {
   ///
   /// - [x]: The left edge of the view. Defaults to 0.0.
   /// - [y]: The top edge of the view. Defaults to 0.0.
-  /// - [width]: The width of the view. Defaults to the canvas client width.
-  /// - [height]: The height of the view. Defaults to the canvas client height.
+  /// - [width]: The width of the view.
+  /// - [height]: The height of the view.
   ///
   /// After calculating the matrix, it calls [setProjectionMatrix].
-  void set2DProjection({double x = 0.0, double y = 0.0, double? width, double? height}) {
-    final double w = width ?? _canvas.clientWidth.toDouble();
-    final double h = height ?? _canvas.clientHeight.toDouble();
-    setProjectionMatrix(makeOrthographicMatrix(x, x + w, y + h, y, -1, 1));
+  void set2DProjection({double x = 0.0, double y = 0.0, required double width, required double height}) {
+    setProjectionMatrix(makeOrthographicMatrix(x, x + width, y + height, y, -1, 1));
   }
 
   /// Sets the projection matrix used by the shaders.
@@ -367,7 +259,7 @@ class Graphics {
   void setProjectionMatrix(Matrix4 matrix) {
     flush();
     _renderState.projectionMatrix.setFrom(matrix);
-    gl.uniformMatrix4fv(_projectionMatrixLocation, false, _renderState.projectionMatrix.storage.toJS);
+    _renderer.setProjection(Float32List.fromList(_renderState.projectionMatrix.storage));
   }
 
   /// Enables and defines a scissor rectangle for clipping rendering.
@@ -375,21 +267,16 @@ class Graphics {
   /// When scissor testing is enabled, rendering is confined to the specified
   /// rectangular area of the canvas.
   ///
-  /// - [x]: The x-coordinate of the lower-left corner of the scissor box.
-  /// - [y]: The y-coordinate of the lower-left corner of the scissor box (origin at top-left of canvas).
+  /// - [x]: The x-coordinate of the top-left corner of the scissor box.
+  /// - [y]: The y-coordinate of the top-left corner of the scissor box.
   /// - [width]: The width of the scissor box.
   /// - [height]: The height of the scissor box.
   void setScissor(int x, int y, int width, int height) {
     flush();
-
-    if (!_renderState.isScissorEnabled) {
-      gl.enable(GL.SCISSOR_TEST);
-      _renderState.isScissorEnabled = true;
-    }
-
-    final glY = _canvas.height - (y + height);
-    gl.scissor(x, glY, width, height);
-    _renderState.scissor.set(x, glY, width, height);
+    _renderState
+      ..isScissorEnabled = true
+      ..scissor.set(x, y, width, height);
+    _renderer.setScissor(x, y, width, height);
   }
 
   /// Disables scissor testing.
@@ -399,7 +286,7 @@ class Graphics {
     flush();
 
     if (_renderState.isScissorEnabled) {
-      gl.disable(GL.SCISSOR_TEST);
+      _renderer.resetScissor();
       _renderState.isScissorEnabled = false;
     }
 
@@ -488,24 +375,19 @@ class Graphics {
     }
   }
 
-  void _prepareRenderState(_PrimitiveType type, {Texture? texture}) {
+  void _prepareRenderState(_BatchMode type, {Texture? texture}) {
     final requestedTexture = texture ?? Texture.white;
-    if ((_renderState.texture != requestedTexture.texture ||
-        _renderState._primitiveType != type ||
-        _renderState._primitiveType == _PrimitiveType.triangleFan ||
-        _renderState._primitiveType == _PrimitiveType.lineStrip)) {
+    if ((_renderState.currentTexture != requestedTexture ||
+        _renderState.batchMode != type ||
+        _renderState.batchMode == _BatchMode.triangleFan ||
+        _renderState.batchMode == _BatchMode.lineStrip)) {
       flush();
     }
 
     if (_vertexCount == 0) {
       _renderState
-        ..texture = requestedTexture.texture
-        .._primitiveType = type;
-
-      gl
-        ..activeTexture(GL.TEXTURE0)
-        ..bindTexture(GL.TEXTURE_2D, _renderState.texture!)
-        ..uniform1i(_textureLocation, 0);
+        ..currentTexture = requestedTexture
+        ..batchMode = type;
     }
   }
 
@@ -537,7 +419,7 @@ class Graphics {
   /// - [x]: The x-coordinate of the point.
   /// - [y]: The y-coordinate of the point.
   void drawPoint(double x, double y) {
-    _prepareRenderState(_PrimitiveType.points, texture: Texture.white);
+    _prepareRenderState(_BatchMode.points, texture: Texture.white);
 
     _transfromAndAddVertices(x, y, 0, 0, _encodedColor);
   }
@@ -550,7 +432,7 @@ class Graphics {
   /// - [y2]: The y-coordinate of the ending point.
   /// - [colors]: An optional list of [Color] objects for per-vertex coloring.
   void drawLine(double x1, double y1, double x2, double y2, {ColorList? colors}) {
-    _prepareRenderState(_PrimitiveType.lines, texture: Texture.white);
+    _prepareRenderState(_BatchMode.lines, texture: Texture.white);
 
     _transfromAndAddVertices(x1, y1, 0.0, 0.0, getColorFromList(colors, 0, _encodedColor));
     _transfromAndAddVertices(x2, y2, 0.0, 0.0, getColorFromList(colors, 1, _encodedColor));
@@ -566,7 +448,7 @@ class Graphics {
   /// - [colors]: An optional list of [Color] objects. If provided, the first color
   ///   `colors[0]` is applied to all vertices.
   void drawLines(List<double> vertices, {ColorList? colors}) {
-    _prepareRenderState(_PrimitiveType.lineStrip, texture: Texture.white);
+    _prepareRenderState(_BatchMode.lineStrip, texture: Texture.white);
     assert(vertices.length >= 4);
 
     for (var i = 0; i < vertices.length; i += 2) {
@@ -604,7 +486,7 @@ class Graphics {
   /// - [colors]: An optional list of [Color] objects. `colors[0]` is for the center,
   ///   subsequent colors apply to the perimeter vertices.
   void drawOval(double x, double y, double radiusX, double radiusY, {int segments = 32, ColorList? colors}) {
-    _prepareRenderState(_PrimitiveType.triangleFan, texture: Texture.white);
+    _prepareRenderState(_BatchMode.triangleFan, texture: Texture.white);
 
     _transfromAndAddVertices(x, y, 0.5, 0.5, getColorFromList(colors, 0, _encodedColor));
 
@@ -654,7 +536,7 @@ class Graphics {
       return;
     }
 
-    _prepareRenderState(_PrimitiveType.triangles, texture: texture);
+    _prepareRenderState(_BatchMode.triangles, texture: texture);
 
     for (var i = 0; i < vCount; i++) {
       var x = vertices[i * 2];
@@ -688,7 +570,7 @@ class Graphics {
     Texture? texture,
     ColorList? colors,
   }) {
-    _prepareRenderState(_PrimitiveType.triangles, texture: texture);
+    _prepareRenderState(_BatchMode.triangles, texture: texture);
 
     _transfromAndAddVertices(x1, y1, u1, v1, getColorFromList(colors, 0, _encodedColor));
     _transfromAndAddVertices(x2, y2, u2, v2, getColorFromList(colors, 1, _encodedColor));
@@ -716,7 +598,7 @@ class Graphics {
     double? height,
     ColorList? colors,
   }) {
-    _prepareRenderState(_PrimitiveType.quads, texture: tex);
+    _prepareRenderState(_BatchMode.quads, texture: tex);
 
     final texW = tex.width.toDouble();
     final texH = tex.height.toDouble();
@@ -790,13 +672,13 @@ class Graphics {
   Point drawText(
     BitmapFont font,
     String text, {
-    x = 0.0,
-    y = 0.0,
-    alignX = 0.0,
-    alignY = 0.0,
-    scaleX = 1.0,
-    scaleY = 1.0,
-    alignXByLine = true,
+    double x = 0.0,
+    double y = 0.0,
+    double alignX = 0.0,
+    double alignY = 0.0,
+    double scaleX = 1.0,
+    double scaleY = 1.0,
+    bool alignXByLine = true,
     ColorList? colors,
   }) {
     var lines = text.split("\n");
@@ -931,7 +813,7 @@ class Graphics {
 
   /// Flushes all batched drawing commands to the GPU.
   ///
-  /// This method sends all data to WebGL for rendering.
+  /// This method sends all data to the renderer backend for drawing.
   /// It is called automatically when necessary (e.g., when changing blend modes,
   /// textures, or when the batch buffer is full), but can also be called
   /// manually to ensure all pending draw operations are executed.
@@ -943,44 +825,39 @@ class Graphics {
       return;
     }
 
-    if (_renderState._primitiveType == null) {
-      die("State error: Batch started without a _PrimitiveType set!");
+    if (_renderState.batchMode == null) {
+      die("State error: Batch started without a _BatchMode set!");
     }
 
-    final int dataSizeInBytes = _vertexCount * _vertexSizeInBytes;
+    final batchMode = _renderState.batchMode!;
+    final texture = _renderState.currentTexture;
+    final textureHandle = texture?.handle;
 
-    gl
-      ..useProgram(_program)
-      ..bindVertexArray(_vao)
-      ..bindBuffer(GL.ARRAY_BUFFER, _interleavedBuffer)
-      ..bufferData(GL.ARRAY_BUFFER, _batchCapacityInBytes.toJS, GL.STREAM_DRAW)
-      ..bufferSubData(GL.ARRAY_BUFFER, 0, _batchedInterleavedData.buffer.asUint8List(0, dataSizeInBytes).toJS);
+    if (batchMode == _BatchMode.quads) {
+      final numQuadsInBatch = _vertexCount ~/ 4;
+      if (_vertexCount % 4 != 0) {
+        die("Warning: Drawing QUAD batch with vertex count $_vertexCount not divisible by 4.");
+        return;
+      }
+      final numIndicesToDraw = numQuadsInBatch * 6;
 
-    switch (_renderState._primitiveType) {
-      case _PrimitiveType.quads:
-        final numQuadsInBatch = _vertexCount ~/ 4;
-        if (_vertexCount % 4 != 0) {
-          die("Warning: Drawing QUAD batch with vertex count $_vertexCount not divisible by 4.");
-          return;
-        }
-        final numIndicesToDraw = numQuadsInBatch * 6;
-
-        gl
-          ..bindBuffer(GL.ELEMENT_ARRAY_BUFFER, _quadIndexBuffer)
-          ..drawElements(GL.TRIANGLES, numIndicesToDraw, GL.UNSIGNED_SHORT, 0)
-          ..bindBuffer(GL.ELEMENT_ARRAY_BUFFER, null);
-        break;
-
-      case _PrimitiveType.points:
-      case _PrimitiveType.lines:
-      case _PrimitiveType.lineStrip:
-      case _PrimitiveType.triangles:
-      case _PrimitiveType.triangleFan:
-        gl.drawArrays(_renderState._primitiveType!.toGLPrimitive(), 0, _vertexCount);
-        break;
-
-      default:
-        die("Unknown batch primitive type: $_renderState.primitiveType");
+      _renderer.drawGeometry(
+        texture: textureHandle,
+        vertices: _batchedInterleavedData,
+        vertexCount: _vertexCount,
+        indices: _quadIndices,
+        indexCount: numIndicesToDraw,
+        primitiveType: PrimitiveType.triangles,
+      );
+    } else {
+      _renderer.drawGeometry(
+        texture: textureHandle,
+        vertices: _batchedInterleavedData,
+        vertexCount: _vertexCount,
+        indices: _emptyIndices,
+        indexCount: 0,
+        primitiveType: batchMode.toPrimitiveType(),
+      );
     }
 
     _vertexCount = 0;

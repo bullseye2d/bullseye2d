@@ -2,7 +2,9 @@
 
 ## ResourceManager
 
-The `ResourceManager` simplifies loading asset. The assets are loaded asynchronously.
+The `ResourceManager` simplifies loading assets. Assets are loaded asynchronously and the API is identical on web and SDL3.
+
+On web, assets are fetched via HTTP. On SDL3, they are loaded from the filesystem (relative to the working directory or executable location).
 
 <details>
 <summary>

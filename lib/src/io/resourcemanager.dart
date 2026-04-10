@@ -1,8 +1,6 @@
 import 'package:bullseye2d/bullseye2d.dart';
-import 'package:web/web.dart' show FontFace, document;
+import 'package:bullseye2d/src/backend/backend.dart' show RendererBackend, FileBackend, ImageLoaderBackend, FontRasterizerBackend;
 import 'dart:collection';
-import 'dart:typed_data';
-import 'dart:js_interop';
 
 /// {@category IO}
 /// Manages the loading of game resources such as textures, images,
@@ -10,21 +8,17 @@ import 'dart:js_interop';
 ///
 /// It automatically tracks loading progress.
 class ResourceManager {
-  final GL2 _gl;
+  final RendererBackend _renderer;
+  final ImageLoaderBackend _imageLoader;
+  final FileBackend _fileLoader;
+  final FontRasterizerBackend _fontRasterizer;
   final Loader _loadingInfo;
   final Audio _audio;
   final _textureCache = HashMap<String, Texture>();
   final _fontCache = HashMap<int, BitmapFont>();
 
-  /// Creates a new [ResourceManager].
-  ///
-  /// - [_gl]: The WebGL2 rendering context.
-  /// - [_audio]: The audio system for sound playback.
-  /// - [_loadingInfo]: The loader instance to track resource loading progress.
-  ///
-  /// Typically, you don't instantiate this class yourself. Instead, you use
-  /// the `app.resources` member provided by the [App] class.
-  ResourceManager(this._gl, this._audio, this._loadingInfo);
+  /// @nodoc
+  ResourceManager(this._renderer, this._imageLoader, this._fileLoader, this._fontRasterizer, this._audio, this._loadingInfo);
 
   /// Loads a [Texture] from the given [path].
   ///
@@ -41,7 +35,7 @@ class ResourceManager {
     var texture = _textureCache[path];
     var newTex = texture == null;
     if (newTex) {
-      texture = Texture.load(_gl, _loadingInfo, path, textureFlags);
+      texture = Texture.load(_renderer, _imageLoader, _loadingInfo, path, textureFlags);
       texture.onDispose((Texture texture) {
         _textureCache.remove(path);
       });
@@ -139,35 +133,25 @@ class ResourceManager {
     bool antiAlias = true,
     String containedAsciiCharacters = BitmapFont.extendedAscii,
   }) {
-    var font = BitmapFont(_gl);
+    var font = BitmapFont(_renderer);
 
-    var fontName = path.replaceAll("/", "").replaceAll(".", "");
     var hash = "${path}_${size}_${antiAlias}_$containedAsciiCharacters".hashCode;
 
     if (_fontCache.containsKey(hash)) {
       return _fontCache[hash]!;
     } else {
       _fontCache[hash] = font;
-      load<ByteBuffer?>(
-        path,
-        _loadingInfo,
-        responseType: "arraybuffer",
-        onLoad: (response, complete, error) {
-          var fontBytes = (response as JSArrayBuffer).toDart;
-          final FontFace fontFace = FontFace(fontName, fontBytes.toJS);
-          try {
-            document.fonts.add(fontFace);
-          } catch (e) {
-            // NOTE(jochen): I don't know why but on Firefox this throws an Invalid Type
-            // exception. But if we ignore it, everythings seems to work.
-            // My assumptions it that firefox returns null instead of a
-            // FontFaceSet Object that is defined in the standard and Dart
-            // expects that return object.
-          }
-          font.generateAtlas(fontName, size, antiAlias, containedAsciiCharacters);
-          complete(fontBytes);
-        },
-      );
+      var loadingState = _loadingInfo.add(path);
+
+      _fileLoader.loadBytes(path).then((bytes) {
+        _fontRasterizer.rasterize(bytes, size, containedAsciiCharacters, antiAlias).then((rasterized) {
+          font.generateAtlasFromRasterized(rasterized, antiAlias);
+          loadingState.completedOrFailed = true;
+        });
+      }).catchError((e) {
+        warn("Error loading font: $path", e);
+        loadingState.completedOrFailed = true;
+      });
     }
 
     return font;
@@ -181,11 +165,8 @@ class ResourceManager {
   ///
   /// Returns the [Sound] object, which will asynchronously load the audio data.
   Sound loadSound(String path, {int retriggerDelayInMs = 0}) {
-    var sound =
-        Sound()
-          ..retriggerDelay = Duration(milliseconds: retriggerDelayInMs)
-          ..loadFromFile(path, _loadingInfo, _audio.audioContext);
-
+    var sound = Sound()..retriggerDelay = Duration(milliseconds: retriggerDelayInMs);
+    _audio.loadSoundFromFile(sound, path, _loadingInfo);
     return sound;
   }
 

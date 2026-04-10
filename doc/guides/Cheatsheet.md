@@ -14,11 +14,11 @@ with a list of all available commands in `Bullseye2D`.
 | `onRender()`                                                  | Override this method for drawing and rendering operations every frame.         |
 | `onSuspend()`                                                 | Override this method for logic to execute when the app loses focus or suspends.  |
 | `onResume()`                                                  | Override this method for logic to execute when the app regains focus or resumes. |
-| `onResize(int width, int height)`                             | Override this method to handle canvas resize events.                           |
+| `onResize(int width, int height)`                             | Override this method to handle window/canvas resize events.                    |
 | `onLoading()`                                                 | Override this to customize the loading screen; return `true` when done loading.  |
 | **App Properties**                                     |                                                                                |
-| `width`                                                       | Gets the current width of the game canvas in pixels.                           |
-| `height`                                                      | Gets the current height of the game canvas in pixels.                          |
+| `width`                                                       | Gets the current width of the game window/canvas in pixels.                    |
+| `height`                                                      | Gets the current height of the game window/canvas in pixels.                   |
 | `updateRate` (getter/setter)                                  | Gets or sets the desired game logic update rate in updates per second.         |
 | `showMouse([Images? images, int frame = 0])`                  | Makes the system mouse cursor visible, optionally with a custom image.         |
 | `hideMouse()`                                                 | Hides the system mouse cursor.                                                 |
@@ -58,13 +58,13 @@ with a list of all available commands in `Bullseye2D`.
 | `gamepad.joyZ(int port, Trigger trigger)`                     | Gets the value (0.0 to 1.0) of the specified trigger.                          |
 | `gamepad.angle(int port, Joystick joystick)`                  | Gets the angle (0-359 degrees) of the specified joystick.                      |
 | **Graphics (`gfx`)**                                          |                                                                                |
-| `gfx.dispose()`                                               | Releases WebGL resources (program, buffers, VAO).                              |
+| `gfx.dispose()`                                               | Releases rendering resources.                                                  |
 | `gfx.clear([double? r, ...])`                                 | Clears the drawing surface with the specified RGBA color.                      |
 | `gfx.setColor([double r = 1.0, ...])`                         | Sets the current drawing color using RGBA values (0.0 to 1.0).                 |
 | `gfx.setColorFrom(Color color)`                               | Sets the current drawing color using a `Color` (Vector4) object.               |
 | `gfx.setBlendMode(BlendMode mode)`                            | Sets the blending mode for subsequent drawing operations.                      |
 | `gfx.setLineWidth(double width)`                              | Sets the width for drawing lines.                                              |
-| `gfx.setViewport(int x, int y, int width, int height)`        | Defines the rectangular area of the canvas where rendering will occur.         |
+| `gfx.setViewport(int x, int y, int width, int height)`        | Defines the rectangular area of the window where rendering will occur.         |
 | `gfx.set2DProjection({double x, y, width, height})`           | Configures an orthographic projection for 2D rendering.                        |
 | `gfx.setProjectionMatrix(Matrix4 matrix)`                     | Sets a custom projection matrix.                                               |
 | `gfx.setScissor(int x, int y, int width, int height)`         | Enables and defines a scissor rectangle to clip rendering.                     |
@@ -107,8 +107,8 @@ with a list of all available commands in `Bullseye2D`.
 | `loader.length`                                               | Gets the number of items currently being tracked by the loader.                |
 | `loader.percent`                                              | Gets the overall loading progress as a value between 0.0 and 1.0.              |
 | **Mouse (`mouse`)**                                           |                                                                                |
-| `mouse.x`                                                     | Gets the current X-coordinate of the mouse cursor relative to the canvas.      |
-| `mouse.y`                                                     | Gets the current Y-coordinate of the mouse cursor relative to the canvas.      |
+| `mouse.x`                                                     | Gets the current X-coordinate of the mouse cursor relative to the window.      |
+| `mouse.y`                                                     | Gets the current Y-coordinate of the mouse cursor relative to the window.      |
 | `mouse.scaleX`                                                | Gets the horizontal scaling factor for mouse coordinates.                      |
 | `mouse.scaleY`                                                | Gets the vertical scaling factor for mouse coordinates.                        |
 | `mouse.mouseWheel`                                            | Gets the mouse wheel scroll delta for the current frame (+1, -1, or 0).        |

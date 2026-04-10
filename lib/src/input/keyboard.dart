@@ -1,7 +1,6 @@
 import 'package:bullseye2d/bullseye2d.dart';
-import 'package:web/web.dart';
+import 'package:bullseye2d/src/backend/backend.dart';
 import 'dart:collection';
-import 'dart:js_interop';
 
 /// {@category Input}
 enum _KeyEvent { keyDown, keyChar, keyUp }
@@ -44,31 +43,18 @@ class Keyboard {
 
   final Queue<Char> _charQueue = Queue<Char>();
 
-  /// Creates a new [Keyboard] instance.
-  ///
-  /// Typically, you don't instantiate this class yourself. Instead, you use
-  /// the `app.keyboard` member provided by the [App] class.
-  ///
-  /// - [canvas]: The [HTMLCanvasElement] to listen for keyboard events on.
-  ///   The canvas should be focusable to receive keyboard input.
-  Keyboard(HTMLCanvasElement canvas) {
-    canvas.addEventListener(
-      'keydown',
-      (KeyboardEvent event) {
-        _onKeyEvent(_KeyEvent.keyDown, event);
-        _onKeyEvent(_KeyEvent.keyChar, event);
-        if ((event.keyCode > 0 && event.keyCode < 48) || (event.keyCode > 111 && event.keyCode < 122)) {
-          stopEvent(event);
-        }
-      }.toJS,
-    );
-
-    canvas.addEventListener(
-      'keyup',
-      (KeyboardEvent event) {
-        _onKeyEvent(_KeyEvent.keyUp, event);
-      }.toJS,
-    );
+  /// @nodoc
+  Keyboard(KeyboardBackend backend) {
+    backend.onKeyDown = (String code, String char) {
+      final keyEnum = KeyCodes.fromCode(code);
+      _onKeyEvent(_KeyEvent.keyDown, keyEnum);
+      _onKeyEvent(_KeyEvent.keyChar, keyEnum, char);
+    };
+    backend.onKeyUp = (String code) {
+      final keyEnum = KeyCodes.fromCode(code);
+      _onKeyEvent(_KeyEvent.keyUp, keyEnum);
+    };
+    backend.attach();
   }
 
   /// @nodoc
@@ -170,12 +156,7 @@ class Keyboard {
     return (index >= 0 && index < _charQueue.length) ? _charQueue.elementAt(index) : Char.empty;
   }
 
-  _onKeyEvent(_KeyEvent type, KeyboardEvent keyEvent) {
-    final String code = keyEvent.code;
-    final String keyString = keyEvent.key;
-
-    final KeyCodes keyEnum = KeyCodes.fromCode(code);
-
+  _onKeyEvent(_KeyEvent type, KeyCodes keyEnum, [String keyString = '']) {
     if (keyEnum != KeyCodes.Unknown) {
       switch (type) {
         case _KeyEvent.keyDown:
@@ -196,7 +177,7 @@ class Keyboard {
     }
 
     if (type == _KeyEvent.keyChar) {
-      if (keyString.length == 1 && !keyEvent.ctrlKey && !keyEvent.altKey && !keyEvent.metaKey) {
+      if (keyString.length == 1) {
         if (_charQueue.length >= _maxCharQueuePerFrame) {
           _charQueue.removeFirst();
         }

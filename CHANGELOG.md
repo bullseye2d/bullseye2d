@@ -1,3 +1,9 @@
+## 2.0.0
+
+- **Multi-platform support**: Bullseye2D now runs on Windows, Mac, and Linux in addition to web browsers. It uses SDL3 for the desktop targets.
+- New CLI commands: `bullseye2d run web`, `bullseye2d run sdl3`, `bullseye2d build web` and `bullseye2d build sdl3`
+- **Breaking change**: `Graphics.gl` (raw WebGL2 context) is no longer publicly exposed
+
 ## 1.0.12
 
 - Feature: Helper class added to easily save data in the browser's local storage
@@ -30,7 +36,7 @@
 
 ## 1.0.6
 
-- Formatted dart code. 
+- Formatted dart code.
 
 ## 1.0.5
 

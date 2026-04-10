@@ -1,6 +1,5 @@
 import 'package:bullseye2d/bullseye2d.dart';
-import 'package:web/web.dart';
-import 'dart:js_interop';
+import 'package:bullseye2d/src/backend/backend.dart' show TextureHandle, RendererBackend, ImageLoaderBackend;
 import 'dart:typed_data';
 
 /// {@category Graphics}
@@ -54,9 +53,10 @@ class Texture {
   /// Initialized by the graphics system.
   static late Texture white;
 
-  WebGLTexture? texture;
+  /// @nodoc
+  TextureHandle? handle;
 
-  final GL2 _gl;
+  final RendererBackend _renderer;
 
   final List<void Function(Texture texture)> _onDispose = [];
   final List<void Function(Texture texture)> _onLoad = [];
@@ -82,109 +82,44 @@ class Texture {
   /// This data is available after the texture has loaded.
   late Uint8List pixelData;
 
-  /// Creates a [Texture] instance, usually internally by static factory methods.
-  ///
-  /// - [gl]: The WebGL2 rendering context.
-  /// - [texture]: The WebGL texture object.
-  /// - [width]: Initial width (defaults to 0).
-  /// - [height]: Initial height (defaults to 0).
-  /// - [flags]: Texture flags (defaults to [TextureFlags.defaultFlags]).
-  /// - [pixelData]: Optional initial pixel data.
+  /// @nodoc
   Texture({
-    required GL2 gl,
-    required this.texture,
+    required RendererBackend renderer,
+    required this.handle,
     this.width = 0,
     this.height = 0,
     this.flags = TextureFlags.defaultFlags,
     Uint8List? pixelData,
-  }) : _gl = gl {
+  }) : _renderer = renderer {
     this.pixelData = pixelData ?? Uint8List(0);
   }
 
-  /// Creates and returns a 1x1 opaque white [Texture].
-  static Texture createWhite(GL2 gl) {
-    final texture = create(gl: gl, pixelData: _whiteTextureData, textureFlags: TextureFlags.clampST);
+  /// @nodoc
+  static Texture createWhite(RendererBackend renderer) {
+    final texture = create(renderer: renderer, pixelData: _whiteTextureData, textureFlags: TextureFlags.clampST);
     texture.isLoading = false;
     return texture;
   }
 
-  /// Creates a [Texture] from raw pixel data or as an empty texture.
-  ///
-  /// - [gl]: The WebGL2 rendering context.
-  /// - [pixelData]: Optional `Uint8List` of pixel data (RGBA). If `null`, a 1x1 transparent black texture is created.
-  /// - [width]: Width of the texture. Defaults to 1 if [pixelData] is `null`.
-  /// - [height]: Height of the texture. Defaults to 1 if [pixelData] is `null`.
-  /// - [textureFlags]: Bitmask of [TextureFlags] to apply.
+  /// @nodoc
   static Texture create({
-    required GL2 gl,
+    required RendererBackend renderer,
     Uint8List? pixelData,
     int width = 1,
     int height = 1,
     int textureFlags = TextureFlags.defaultFlags,
   }) {
-    var flags = textureFlags;
-    final tex = gl.createTexture();
-    if (tex == null) {
-      throw Exception("Could not create texture!");
-    }
-
-    gl.bindTexture(GL.TEXTURE_2D, tex);
     if (pixelData == null) {
       pixelData = _emptyTextureData;
       width = 1;
       height = 1;
     }
-    gl.texImage2D(
-      GL.TEXTURE_2D,
-      0,
-      GL.RGBA,
-      width.toJS,
-      height.toJS,
-      0.toJS,
-      GL.RGBA,
-      GL.UNSIGNED_BYTE,
-      pixelData.toJS,
-    );
 
-    if (flags.has(TextureFlags.filter)) {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
-    } else {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
-    }
-
-    if (flags.hasAll(TextureFlags.mipmap | TextureFlags.filter)) {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR_MIPMAP_LINEAR);
-    } else if (flags.has(TextureFlags.mipmap)) {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST_MIPMAP_NEAREST);
-    } else if (flags.has(TextureFlags.filter)) {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
-    } else {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
-    }
-
-    if (flags.has(TextureFlags.clampS)) {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
-    } else if (flags.has(TextureFlags.repeatS)) {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.REPEAT);
-    } else if (flags.has(TextureFlags.mirroredRepeatS)) {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.MIRRORED_REPEAT);
-    } else {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
-    }
-
-    if (flags.has(TextureFlags.clampT)) {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
-    } else if (flags.has(TextureFlags.repeatT)) {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.REPEAT);
-    } else if (flags.has(TextureFlags.mirroredRepeatT)) {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.MIRRORED_REPEAT);
-    } else {
-      gl.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
-    }
+    final handle = renderer.createTexture(width, height, pixelData, textureFlags);
 
     final texture = Texture(
-      gl: gl,
-      texture: tex,
+      renderer: renderer,
+      handle: handle,
       width: width,
       height: height,
       flags: textureFlags,
@@ -193,63 +128,45 @@ class Texture {
 
     texture.isLoading = false;
 
-    if (flags.has(TextureFlags.mipmap)) {
-      gl.generateMipmap(GL.TEXTURE_2D);
-    }
-
     return texture;
   }
 
-  /// Asynchronously loads a [Texture] from the specified [path].
-  ///
-  /// - [gl]: The WebGL2 rendering context.
-  /// - [loadingInfo]: A [Loader] instance to track loading progress.
-  /// - [path]: The URL or path to the image file.
-  /// - [textureFlags]: Optional [TextureFlags] to apply.
-  ///
-  /// Returns a [Texture] instance.
-  /// Use [onLoad] to register a callback for when loading completes.
-  static Texture load(GL2 gl, Loader loadingInfo, path, [int textureFlags = TextureFlags.defaultFlags]) {
-    final texture = create(gl: gl, textureFlags: textureFlags);
+  /// @nodoc
+  static Texture load(
+    RendererBackend renderer,
+    ImageLoaderBackend imageLoader,
+    Loader loadingInfo,
+    String path, [
+    int textureFlags = TextureFlags.defaultFlags,
+  ]) {
+    final texture = create(renderer: renderer, textureFlags: textureFlags);
     texture.isLoading = true;
 
-    loadImageData(path, loadingInfo)
-        .then((img) {
-          if (img != null && texture.texture != null) {
-            texture.width = img.width;
-            texture.height = img.height;
-            gl.bindTexture(GL.TEXTURE_2D, texture.texture);
-            final canvas =
-                HTMLCanvasElement()
-                  ..width = texture.width
-                  ..height = texture.height;
-            final ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-            ctx.drawImage(img, 0, 0);
-            final pixelData = ctx.getImageData(0, 0, texture.width, texture.height).data.toDart;
-            gl.texImage2D(
-              GL.TEXTURE_2D,
-              0,
-              GL.RGBA,
-              texture.width.toJS,
-              texture.height.toJS,
-              0.toJS,
-              GL.RGBA,
-              GL.UNSIGNED_BYTE,
-              pixelData.buffer.asUint8List().toJS,
-            );
-            texture.pixelData = pixelData.buffer.asUint8List();
-            texture.isLoading = false;
+    final loadingState = loadingInfo.add(path);
 
-            if (texture.flags.has(TextureFlags.mipmap)) {
-              gl.generateMipmap(GL.TEXTURE_2D);
-            }
+    imageLoader
+        .decodeFromFile(path)
+        .then((decoded) {
+          if (decoded.width > 0 && decoded.height > 0 && texture.handle != null) {
+            texture.width = decoded.width;
+            texture.height = decoded.height;
+
+            // Destroy the placeholder 1x1 texture and create the real one
+            renderer.destroyTexture(texture.handle!);
+            final realHandle = renderer.createTexture(decoded.width, decoded.height, decoded.pixels, textureFlags);
+            texture.handle = realHandle;
+
+            texture.pixelData = decoded.pixels;
+            texture.isLoading = false;
 
             texture.triggerOnLoadCallback();
           }
+          loadingState.completedOrFailed = true;
         })
         .catchError((e) {
-          error("catchError", e);
+          error("Error loading texture: $path", e);
           texture.isLoading = false;
+          loadingState.completedOrFailed = true;
         });
 
     return texture;
@@ -274,12 +191,10 @@ class Texture {
     _refCount--;
 
     if (_refCount == 0) {
-      _gl.deleteTexture(texture);
-      // TODO: It is possible that we still have draw commands issued with this texture.
-      // we should either flush the draw commands
-      // or draw commands should retain the texture (maybe complex)
-      // or we should delay it on frame boundaries???
-      texture = null;
+      if (handle != null) {
+        _renderer.destroyTexture(handle!);
+      }
+      handle = null;
       for (var func in _onDispose) {
         func(this);
       }
@@ -300,7 +215,7 @@ class Texture {
   }
 
   /// Registers a callback function to be executed when the texture is disposed
-  /// (i.e., its reference count reaches zero and the WebGL texture is deleted).
+  /// (i.e., its reference count reaches zero and the texture is deleted).
   ///
   /// - [func]: The function to call, receiving the disposed [Texture] as an argument.
   void onDispose(Function(Texture texture) func) {
@@ -334,12 +249,8 @@ class Texture {
       );
     }
 
-    _gl.bindTexture(GL.TEXTURE_2D, texture);
-
-    _gl.texSubImage2D(GL.TEXTURE_2D, 0, 0, 0, width.toJS, height.toJS, GL.RGBA.toJS, GL.UNSIGNED_BYTE, data.toJS);
-
-    if (flags.has(TextureFlags.mipmap)) {
-      _gl.generateMipmap(GL.TEXTURE_2D);
+    if (handle != null) {
+      _renderer.updateTexture(handle!, 0, 0, width, height, data);
     }
 
     pixelData = Uint8List.fromList(data);

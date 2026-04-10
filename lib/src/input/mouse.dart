@@ -1,8 +1,4 @@
-import 'package:bullseye2d/bullseye2d.dart';
-import 'package:web/web.dart';
-import 'dart:js_interop';
-
-String f = "";
+import 'package:bullseye2d/src/backend/backend.dart';
 
 /// @nodoc
 /// {@category Input}
@@ -30,7 +26,7 @@ enum MouseButton {
 }
 
 /// {@category Input}
-/// Manages mouse and touch input.
+/// Manages mouse, touch, and pointer input.
 class Mouse {
   static const _maxTouchIds = 32;
   static const _maxMouseButtons = 5;
@@ -47,78 +43,119 @@ class Mouse {
   /// The vertical scaling factor applied to mouse coordinates.
   double scaleY = 1.0;
 
-  final HTMLCanvasElement _canvas;
-
   final List<_TouchInfo> _touchState = List.generate(_maxTouchIds, (_) => _TouchInfo(), growable: false);
 
   final _mouseDown = List.filled(_maxMouseButtons, false);
-  final _mouseHit = List.filled(
-    _maxMouseButtons,
-    false,
-  ); //TODO: An integer holding the number of times the button was hit is better?
+  final _mouseHit = List.filled(_maxMouseButtons, false);
   final _mouseUp = List.filled(_maxMouseButtons, false);
 
   /// The accumulated mouse wheel movement since the last frame.
   int mouseWheel = 0;
 
-  /// Function that can be used when user interacts with canvas for the first time
+  /// Function that can be used when user interacts with canvas for the first time.
   void Function()? onFirstClick;
 
-  /// Creates a [Mouse] instance and attaches event listeners to the provided [_canvas].
-  /// Typically, you don't instantiate this class yourself. Instead, you use
-  /// the `app.mouse` member provided by the [App] class.
-  Mouse(this._canvas) {
-    // NOTE:
-    // https://developer.mozilla.org/de/docs/Web/API/EventTarget/addEventListener
-    // In Safari for wheel and touch events the passive default value is true, so
-    // we force it to false, because else preventEvent doesn't work
-    var opt = AddEventListenerOptions(passive: false);
+  /// @nodoc
+  Mouse(MouseBackend backend) {
+    backend.onMove = (double mx, double my) {
+      x = mx;
+      y = my;
+    };
 
-    _canvas.addEventListener('wheel', _onWheel.toJS, opt);
-    _canvas.addEventListener('contextmenu', _onContextMenu.toJS);
-    _canvas.addEventListener('touchstart', _onTouchStart.toJS, opt);
-    _canvas.addEventListener('touchmove', _onTouchMove.toJS, opt);
-    _canvas.addEventListener('touchend', _onTouchEnd.toJS, opt);
-    _canvas.addEventListener('fullscreenchange', _onFullscreenChange.toJS);
+    backend.onButtonDown = (int button) {
+      if (button < _mouseDown.length) {
+        _mouseDown[button] = true;
+        _mouseHit[button] = true;
+      }
+    };
 
-    window.addEventListener('resize', _onResize.toJS);
+    backend.onButtonUp = (int button) {
+      if (button < _mouseDown.length) {
+        _mouseDown[button] = false;
+        _mouseUp[button] = true;
+      }
+    };
 
-    window.addEventListener('mousedown', _onMouseDown.toJS);
-    window.addEventListener('mouseup', _onMouseUp.toJS);
-    window.addEventListener('mousemove', _onMouseMove.toJS);
+    backend.onWheel = (int delta) {
+      mouseWheel += delta;
+    };
 
-    _canvas.addEventListener('click', _onClick.toJS);
-    _updateSize();
-  }
+    backend.onTouchStart = (int id, double tx, double ty, double force) {
+      for (var i = 0; i < _maxTouchIds; ++i) {
+        if (_touchState[i].id != -1) continue;
+        _touchState[i]
+          ..id = id
+          ..x = tx
+          ..y = ty
+          ..down = true
+          ..force = force
+          ..hit += 1;
 
-  /// Removes all event listeners previously attached by this [Mouse] instance.
-  dispose() {
-    _canvas.removeEventListener('wheel', _onWheel.toJS);
-    _canvas.removeEventListener('click', _onClick.toJS);
-    _canvas.removeEventListener('contextmenu', _onContextMenu.toJS);
-    _canvas.removeEventListener('touchstart', _onTouchStart.toJS);
-    _canvas.removeEventListener('touchmove', _onTouchMove.toJS);
-    _canvas.removeEventListener('touchend', _onTouchEnd.toJS);
-    _canvas.removeEventListener('fullscreenchange', _onFullscreenChange.toJS);
+        if (i == 0) {
+          _mouseHit[0] = true;
+          _mouseDown[0] = true;
+          x = _touchState[i].x;
+          y = _touchState[i].y;
+        }
+        break;
+      }
+    };
 
-    window.removeEventListener('resize', _onResize.toJS);
+    backend.onTouchMove = (int id, double tx, double ty, double force) {
+      for (var i = 0; i < _maxTouchIds; ++i) {
+        if (_touchState[i].id != id) continue;
+        _touchState[i]
+          ..x = tx
+          ..y = ty
+          ..down = true
+          ..force = force;
 
-    window.removeEventListener('mousedown', _onMouseDown.toJS);
-    window.removeEventListener('mouseup', _onMouseUp.toJS);
-    window.removeEventListener('mousemove', _onMouseMove.toJS);
+        if (i == 0) {
+          _mouseDown[0] = true;
+          x = _touchState[i].x;
+          y = _touchState[i].y;
+        }
+        break;
+      }
+    };
+
+    backend.onTouchEnd = (int id) {
+      for (var i = 0; i < _maxTouchIds; ++i) {
+        if (_touchState[i].id != id) continue;
+        _touchState[i]
+          ..id = -1
+          ..down = false
+          ..up = true;
+
+        if (i == 0) {
+          _mouseUp[0] = true;
+          _mouseDown[0] = false;
+          x = _touchState[i].x;
+          y = _touchState[i].y;
+        }
+        break;
+      }
+    };
+
+    backend.onFirstClick = () {
+      onFirstClick?.call();
+      onFirstClick = null;
+    };
+
+    backend.attach();
   }
 
   /// @nodoc
-  suspend() {
+  void suspend() {
     for (var touch in _touchState) {
-      if (touch.down = true) {
+      if (touch.down == true) {
         touch.up = true;
       }
     }
   }
 
   /// @nodoc
-  onEndFrame() {
+  void onEndFrame() {
     mouseWheel = 0;
     for (var touch in _touchState) {
       touch.hit = 0;
@@ -127,150 +164,6 @@ class Mouse {
 
     _mouseHit.fillRange(0, _mouseHit.length, false);
     _mouseUp.fillRange(0, _mouseUp.length, false);
-  }
-
-  void _onWheel(WheelEvent event) {
-    mouseWheel += event.deltaY.sign.toInt();
-    stopEvent(event);
-  }
-
-  void _onClick(MouseEvent event) {
-    _canvas.focus();
-
-    onFirstClick?.call();
-    onFirstClick = null;
-
-    stopEvent(event);
-  }
-
-  JSAny _onContextMenu(PointerEvent event) {
-    stopEvent(event);
-    return false.toJS;
-  }
-
-  void _onTouchStart(TouchEvent event) {
-    _canvas.focus();
-
-    var changedTouches = event.changedTouches;
-    for (var i = 0; i < changedTouches.length; i++) {
-      var touch = changedTouches.item(i);
-      if (touch != null) {
-        var id = touch.identifier.toInt();
-        for (var i = 0; i < _maxTouchIds; ++i) {
-          if (_touchState[i].id != -1) continue;
-          _touchState[i]
-            ..id = id
-            ..x = _touchX(touch)
-            ..y = _touchY(touch)
-            ..down = true
-            ..force = touch.force
-            ..hit += 1;
-
-          if (i == 0) {
-            _mouseHit[0] = true;
-            _mouseDown[0] = true;
-            x = _touchState[i].x;
-            y = _touchState[i].y;
-          }
-          break;
-        }
-      }
-    }
-    if (onFirstClick == null) {
-      stopEvent(event);
-    }
-  }
-
-  void _onTouchMove(TouchEvent event) {
-    var changedTouches = event.changedTouches;
-    for (var i = 0; i < changedTouches.length; i++) {
-      var touch = changedTouches.item(i);
-      if (touch != null) {
-        var id = touch.identifier.toInt();
-        for (var i = 0; i < _maxTouchIds; ++i) {
-          if (_touchState[i].id != id) continue;
-          _touchState[i]
-            ..x = _touchX(touch)
-            ..y = _touchY(touch)
-            ..down = true
-            ..force = touch.force;
-
-          if (i == 0) {
-            _mouseDown[0] = true;
-            x = _touchState[i].x;
-            y = _touchState[i].y;
-          }
-          break;
-        }
-      }
-    }
-
-    if (onFirstClick == null) {
-      stopEvent(event);
-    }
-  }
-
-  void _onTouchEnd(TouchEvent event) {
-    var changedTouches = event.changedTouches;
-    for (var i = 0; i < changedTouches.length; i++) {
-      var touch = changedTouches.item(i);
-      if (touch != null) {
-        var id = touch.identifier.toInt();
-        for (var i = 0; i < _maxTouchIds; ++i) {
-          if (_touchState[i].id != id) continue;
-          _touchState[i]
-            ..id = -1
-            ..x = _touchX(touch)
-            ..y = _touchY(touch)
-            ..down = false
-            ..up = true
-            ..force = touch.force;
-
-          if (i == 0) {
-            _mouseUp[0] = true;
-            _mouseDown[0] = false;
-            x = _touchState[i].x;
-            y = _touchState[i].y;
-          }
-          break;
-        }
-      }
-    }
-
-    if (onFirstClick == null) {
-      stopEvent(event);
-    }
-  }
-
-  void _onMouseDown(MouseEvent event) {
-    if (event.button < _mouseDown.length) {
-      _mouseDown[event.button] = true;
-      _mouseHit[event.button] = true;
-    }
-    stopEvent(event);
-    if (onFirstClick == null) {
-      stopEvent(event);
-    }
-  }
-
-  void _onMouseUp(MouseEvent event) {
-    if (event.button < _mouseDown.length) {
-      _mouseDown[event.button] = false;
-      _mouseUp[event.button] = true;
-    }
-
-    if (onFirstClick == null) {
-      stopEvent(event);
-    }
-  }
-
-  void _onMouseMove(MouseEvent event) {
-    x = _mouseX(event);
-    y = _mouseY(event);
-
-    if (onFirstClick == null) {
-      stopEvent(event);
-    }
   }
 
   /// Checks if the specified mouse [button] is currently held down.
@@ -294,7 +187,7 @@ class Mouse {
     return _mouseUp[button.index];
   }
 
-  /// Checks if the finger with the specified index us currently touching the touchscreen.
+  /// Checks if the finger with the specified index is currently touching the touchscreen.
   bool touchDown(int index) {
     if (index < 0 || index >= _touchState.length) {
       return false;
@@ -359,74 +252,5 @@ class Mouse {
     }
 
     return _touchState[index].y;
-  }
-
-  void _onResize(Event event) {
-    _updateSize();
-  }
-
-  void _onFullscreenChange(Event event) {
-    _updateSize();
-  }
-
-  _updateSize() {
-    scaleX = (_canvas.clientWidth == 0) ? 1.0 : _canvas.width / _canvas.clientWidth;
-    scaleY = (_canvas.clientHeight == 0) ? 1.0 : _canvas.height / _canvas.clientHeight;
-  }
-
-  double _mouseX(MouseEvent event) {
-    double x = event.clientX + window.scrollX;
-    Element? el = _canvas;
-    while (el != null) {
-      if (el.isA<HTMLElement>()) {
-        x -= (el as HTMLElement).offsetLeft;
-        el = el.offsetParent;
-      } else {
-        el = null;
-      }
-    }
-    return x * scaleX;
-  }
-
-  double _mouseY(MouseEvent event) {
-    double y = event.clientY + window.scrollY;
-    Element? el = _canvas;
-    while (el != null) {
-      if (el.isA<HTMLElement>()) {
-        y -= (el as HTMLElement).offsetTop;
-        el = el.offsetParent;
-      } else {
-        el = null;
-      }
-    }
-    return y * scaleY;
-  }
-
-  double _touchX(Touch touch) {
-    double x = touch.pageX;
-    Element? el = _canvas;
-    while (el != null) {
-      if (el.isA<HTMLElement>()) {
-        x -= (el as HTMLElement).offsetLeft;
-        el = el.offsetParent;
-      } else {
-        el = null;
-      }
-    }
-    return x * scaleX;
-  }
-
-  double _touchY(Touch touch) {
-    double y = touch.pageY;
-    Element? el = _canvas;
-    while (el != null) {
-      if (el.isA<HTMLElement>()) {
-        y -= (el as HTMLElement).offsetTop;
-        el = el.offsetParent;
-      } else {
-        el = null;
-      }
-    }
-    return y * scaleY;
   }
 }

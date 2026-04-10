@@ -67,16 +67,56 @@ class AppConfig {
   /// Defaults to `false`.
   bool autoRequestAccelerometerPermission;
 
-  /// Creates an instance of [AppConfig] with optional parameters.
+  /// The application title.
   ///
-  /// - [canvasElement]: The CSS selector for the HTML canvas. Defaults to `"#gameCanvas"`.
-  /// - [gfxBatchCapacityInBytes]: The graphics batch capacity in bytes. Defaults to `65536`.
-  /// - [autoSuspend]: Whether the application should auto-suspend. Defaults to `true`.
-  /// - [autoRequestAccelerometerPermission]: Auto request Accelerometer Permission on first user interaction. Defaults to `false`.
+  /// On web: sets `document.title` (browser tab title).
+  /// On SDL3: sets the window title bar text.
+  ///
+  /// Defaults to `"Bullseye2D"`.
+  String title;
+
+  /// The initial width in pixels.
+  ///
+  /// On web: sets the canvas width.
+  /// On SDL3: sets the initial window width.
+  ///
+  /// Defaults to `800`.
+  int width;
+
+  /// The initial height in pixels.
+  ///
+  /// On web: sets the canvas height.
+  /// On SDL3: sets the initial window height.
+  ///
+  /// Defaults to `600`.
+  int height;
+
+  /// Whether the window is resizable.
+  ///
+  /// On web: generally controlled by the browser/CSS, this is a hint.
+  /// On SDL3: controls the SDL window resizable flag.
+  ///
+  /// Defaults to `true`.
+  bool resizable;
+
+  /// Whether to start in fullscreen mode.
+  ///
+  /// On web: requests fullscreen on the canvas element.
+  /// On SDL3: creates a fullscreen SDL window.
+  ///
+  /// Defaults to `false`.
+  bool fullscreen;
+
+  /// Creates an instance of [AppConfig] with optional parameters.
   AppConfig({
     this.canvasElement = "#gameCanvas",
     this.gfxBatchCapacityInBytes = 65536,
     this.autoSuspend = true,
     this.autoRequestAccelerometerPermission = false,
+    this.title = "Bullseye2D",
+    this.width = 800,
+    this.height = 600,
+    this.resizable = true,
+    this.fullscreen = false,
   });
 }
