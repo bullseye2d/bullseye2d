@@ -1,5 +1,5 @@
 name: bullseye2d
-description: An cross platform 2D game library for Dart that supports a WebGL2 backend as well as native support for Windows, Mac and Linux via SDL3.
+description: A cross-platform 2D game library for Dart that supports a WebGL2 backend as well as native support for Windows, Mac and Linux via SDL3.
 version: 2.0.1
 repository: https://github.com/bullseye2d/bullseye2d
 
