@@ -40,7 +40,6 @@ abstract class WindowBackend {
   void setCursorVisible(bool visible);
   void onFocus(void Function() callback);
   void onBlur(void Function() callback);
-  void onResize(void Function(int w, int h) callback);
 
   /// High-resolution timestamp in milliseconds (replaces performance.now()).
   double now();

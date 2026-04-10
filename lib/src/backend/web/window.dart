@@ -11,8 +11,6 @@ class WebWindowBackend implements WindowBackend {
 
   void Function()? _onFocusCallback;
   void Function()? _onBlurCallback;
-  // ignore: unused_field
-  void Function(int w, int h)? _onResizeCallback;
 
   WebWindowBackend(this._config);
 
@@ -96,11 +94,6 @@ class WebWindowBackend implements WindowBackend {
   @override
   void onBlur(void Function() callback) {
     _onBlurCallback = callback;
-  }
-
-  @override
-  void onResize(void Function(int w, int h) callback) {
-    _onResizeCallback = callback;
   }
 
   @override

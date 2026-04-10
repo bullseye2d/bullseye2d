@@ -24,7 +24,6 @@ class Sdl3WindowBackend implements WindowBackend {
 
   void Function()? _onFocusCallback;
   void Function()? _onBlurCallback;
-  void Function(int w, int h)? _onResizeCallback;
 
   bool _running = true;
 
@@ -116,11 +115,6 @@ class Sdl3WindowBackend implements WindowBackend {
   }
 
   @override
-  void onResize(void Function(int w, int h) callback) {
-    _onResizeCallback = callback;
-  }
-
-  @override
   double now() {
     return (sdlGetPerformanceCounter() / _perfFrequency) * 1000.0;
   }
@@ -159,14 +153,6 @@ class Sdl3WindowBackend implements WindowBackend {
 
           case SDL_EVENT_WINDOW_FOCUS_LOST:
             _onBlurCallback?.call();
-
-          case SDL_EVENT_WINDOW_RESIZED:
-            final w = calloc<Int32>();
-            final h = calloc<Int32>();
-            sdlGetWindowSize(sdlWindow, w, h);
-            _onResizeCallback?.call(w.value, h.value);
-            calloc.free(w);
-            calloc.free(h);
 
           case SDL_EVENT_KEY_DOWN:
           case SDL_EVENT_KEY_UP:
