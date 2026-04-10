@@ -32,10 +32,10 @@ class Rect<T extends num> {
   T get y => top;
 
   /// Sets the x-coordinate of the left edge of the rectangle. Alias for setting [left].
-  set x(x) => left = x;
+  set x(T x) => left = x;
 
   /// Sets the y-coordinate of the top edge of the rectangle. Alias for setting [top].
-  set y(y) => top = y;
+  set y(T y) => top = y;
 
   /// The x-coordinate of the right edge of the rectangle.
   /// Calculated as `left + width`.
@@ -90,7 +90,7 @@ class Rect<T extends num> {
   /// - [top]: The new y-coordinate of the top edge.
   /// - [width]: The new width.
   /// - [height]: The new height.
-  set(T left, T top, T width, T height) {
+  void set(T left, T top, T width, T height) {
     this
       ..left = left
       ..top = top
