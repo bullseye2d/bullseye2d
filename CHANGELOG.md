@@ -1,3 +1,7 @@
+## 2.0.05
+
+- Updated Dart Depdendency Constraints
+
 ## 2.0.4
 
 - Dart Formatting fixed
