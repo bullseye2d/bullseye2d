@@ -7,6 +7,7 @@ Bullseye2D is a 2D game library for the [**Dart Programming Language**](https://
 <div class="note warning">
   <p><strong>Disclaimer:</strong> This is still an alpha version of <strong>Bullseye2D</strong>.<br/>
     I might introduce breaking API changes in the future.</p>
+  <p>Right now, on MAC OS X with the SDL3 Backend it crashes on Video Initialization. This is because Dart Code can't run on the main thread, while the Initialization of SDL3/Mac OS requires this. I need to investigate further.</p>
 </div>
 
 Learn more about `Bullseye2D` on our [Homepage](https://bullseye2d.org)

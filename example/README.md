@@ -2,10 +2,6 @@
 
 Bullseye2D comes with demos that run on both web and SDL3 desktop from the same source code.
 
-## Note
-
-The SDL3 Backend doesn't run on Mac OS X right now. I think this is because Dart Code doesn't run on the main thread, while SDL Initialization (Video) fails, if not called fromt he main thread on OS X. I'll need to investigate further how to fix this.
-
 ## Web
 
 Explore them on our website at [bullseye2d.org/demos](https://bullseye2d.org/demos) or run locally:
