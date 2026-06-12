@@ -25,11 +25,11 @@ class Sdl3KeyboardBackend implements KeyboardBackend {
 
   /// Called by the SDL3 event loop when a key event is received.
   void handleKeyEvent(Pointer<SdlEvent> event) {
-    final keyEvent = event.key.ref;
+    final keyEvent = event.ref.key;
     final scancode = keyEvent.scancode;
     final code = _scancodeToCode(scancode);
 
-    if (keyEvent.down != 0) {
+    if (keyEvent.down) {
       final keyName = sdlGetKeyName(keyEvent.key) ?? '';
       final char = keyName.length == 1 ? keyName : '';
       onKeyDown?.call(code, char);
@@ -57,6 +57,7 @@ class Sdl3KeyboardBackend implements KeyboardBackend {
     return _scancodeMap[scancode] ?? name;
   }
 
+  // dart format off
   static final Map<int, String> _scancodeMap = {
     SDL_SCANCODE_A: 'KeyA', SDL_SCANCODE_B: 'KeyB', SDL_SCANCODE_C: 'KeyC',
     SDL_SCANCODE_D: 'KeyD', SDL_SCANCODE_E: 'KeyE', SDL_SCANCODE_F: 'KeyF',
@@ -98,4 +99,5 @@ class Sdl3KeyboardBackend implements KeyboardBackend {
     SDL_SCANCODE_RCTRL: 'ControlRight', SDL_SCANCODE_RSHIFT: 'ShiftRight',
     SDL_SCANCODE_RALT: 'AltRight', SDL_SCANCODE_RGUI: 'MetaRight',
   };
+  // dart format on
 }

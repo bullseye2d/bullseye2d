@@ -75,11 +75,23 @@ class Audio {
   /// Returns the channel ID on which the sound is playing, or -1 if it could not be played.
   int playSound(Sound sound, {int channel = -1, bool loop = false, double? loopStart, double? loopEnd}) {
     var targetChannels = (channel == -1) ? _allChannels : [channel];
-    return playSoundOnTargetChannels(sound, targetChannels: targetChannels, loop: loop, loopStart: loopStart, loopEnd: loopEnd);
+    return playSoundOnTargetChannels(
+      sound,
+      targetChannels: targetChannels,
+      loop: loop,
+      loopStart: loopStart,
+      loopEnd: loopEnd,
+    );
   }
 
   /// Plays the given [Sound] on one of the specified target channels.
-  int playSoundOnTargetChannels(Sound sound, {List<int>? targetChannels, bool loop = false, double? loopStart, double? loopEnd}) {
+  int playSoundOnTargetChannels(
+    Sound sound, {
+    List<int>? targetChannels,
+    bool loop = false,
+    double? loopStart,
+    double? loopEnd,
+  }) {
     if (sound.state != LoadingState.ready || sound.bufferHandle == null) return -1;
 
     if (sound.lastTimePlayed != null) {
@@ -184,14 +196,17 @@ class Audio {
   /// Loads a sound from a file and tracks loading progress.
   void loadSoundFromFile(Sound sound, String path, Loader loadingInfo) {
     var loadingState = loadingInfo.add(path);
-    _backend.decodeAudioFromFile(path).then((handle) {
-      sound.bufferHandle = handle;
-      sound.state = LoadingState.ready;
-      loadingState.completedOrFailed = true;
-    }).catchError((e) {
-      warn("Error loading sound: $path", e);
-      sound.state = LoadingState.error;
-      loadingState.completedOrFailed = true;
-    });
+    _backend
+        .decodeAudioFromFile(path)
+        .then((handle) {
+          sound.bufferHandle = handle;
+          sound.state = LoadingState.ready;
+          loadingState.completedOrFailed = true;
+        })
+        .catchError((e) {
+          warn("Error loading sound: $path", e);
+          sound.state = LoadingState.error;
+          loadingState.completedOrFailed = true;
+        });
   }
 }

@@ -34,19 +34,19 @@ class Sdl3MouseBackend implements MouseBackend {
 
   /// Called by the SDL3 event loop for mouse motion.
   void handleMotion(Pointer<SdlEvent> event) {
-    final motion = event.motion.ref;
+    final motion = event.ref.motion;
     onMove?.call(motion.x, motion.y);
   }
 
   /// Called by the SDL3 event loop for mouse button events.
   void handleButton(Pointer<SdlEvent> event) {
-    final btn = event.button.ref;
+    final btn = event.ref.button;
     // SDL3 button: 1=left, 2=middle, 3=right
     // Web/bullseye2d: 0=left, 1=middle, 2=right
     final mappedButton = btn.button - 1;
     if (mappedButton < 0) return;
 
-    if (btn.down != 0) {
+    if (btn.down) {
       onFirstClick?.call();
       onFirstClick = null;
       onButtonDown?.call(mappedButton);
@@ -57,7 +57,7 @@ class Sdl3MouseBackend implements MouseBackend {
 
   /// Called by the SDL3 event loop for mouse wheel events.
   void handleWheel(Pointer<SdlEvent> event) {
-    final wheel = event.wheel.ref;
+    final wheel = event.ref.wheel;
     onWheel?.call(wheel.y.sign.toInt());
   }
 }

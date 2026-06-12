@@ -174,5 +174,4 @@ class CreateCommand extends Command {
     }
     return '1.0.0';
   }
-
 }

@@ -140,7 +140,7 @@ class Sdl3WindowBackend implements WindowBackend {
     final event = calloc<SdlEvent>();
     try {
       while (sdlPollEvent(event)) {
-        final type = event.type;
+        final type = event.ref.type;
         switch (type) {
           case SDL_EVENT_QUIT:
             return false;
@@ -159,7 +159,7 @@ class Sdl3WindowBackend implements WindowBackend {
             keyboardBackend?.handleKeyEvent(event);
 
           case SDL_EVENT_TEXT_INPUT:
-            final textEvent = event.text.ref;
+            final textEvent = event.ref.text;
             final textPtr = textEvent.text;
             if (textPtr != nullptr) {
               final textStr = textPtr.toDartString();
@@ -179,23 +179,33 @@ class Sdl3WindowBackend implements WindowBackend {
             mouseBackend?.handleWheel(event);
 
           case SDL_EVENT_FINGER_DOWN:
-            final finger = event.tfinger.ref;
-            mouseBackend?.onTouchStart?.call(finger.fingerId.hashCode, finger.x.toDouble(), finger.y.toDouble(), finger.pressure.toDouble());
+            final finger = event.ref.tfinger;
+            mouseBackend?.onTouchStart?.call(
+              finger.fingerId.hashCode,
+              finger.x.toDouble(),
+              finger.y.toDouble(),
+              finger.pressure.toDouble(),
+            );
 
           case SDL_EVENT_FINGER_MOTION:
-            final finger = event.tfinger.ref;
-            mouseBackend?.onTouchMove?.call(finger.fingerId.hashCode, finger.x.toDouble(), finger.y.toDouble(), finger.pressure.toDouble());
+            final finger = event.ref.tfinger;
+            mouseBackend?.onTouchMove?.call(
+              finger.fingerId.hashCode,
+              finger.x.toDouble(),
+              finger.y.toDouble(),
+              finger.pressure.toDouble(),
+            );
 
           case SDL_EVENT_FINGER_UP:
-            final finger = event.tfinger.ref;
+            final finger = event.ref.tfinger;
             mouseBackend?.onTouchEnd?.call(finger.fingerId.hashCode);
 
           case SDL_EVENT_GAMEPAD_ADDED:
-            final devEvent = event.gdevice.ref;
+            final devEvent = event.ref.gdevice;
             gamepadBackend?.handleDeviceAdded(devEvent.which);
 
           case SDL_EVENT_GAMEPAD_REMOVED:
-            final devEvent = event.gdevice.ref;
+            final devEvent = event.ref.gdevice;
             gamepadBackend?.handleDeviceRemoved(devEvent.which);
         }
       }

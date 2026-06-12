@@ -59,8 +59,8 @@ class WebWindowBackend implements WindowBackend {
   @override
   String getPlatform() {
     final platform = window.navigator.platform.toLowerCase();
-    final isIOS = ['ipad simulator', 'iphone simulator', 'ipod simulator', 'ipad', 'iphone', 'ipod']
-            .contains(platform) ||
+    final isIOS =
+        ['ipad simulator', 'iphone simulator', 'ipod simulator', 'ipad', 'iphone', 'ipod'].contains(platform) ||
         (platform == 'macintel' && window.navigator.maxTouchPoints > 1);
     return isIOS ? 'ios' : 'web';
   }

@@ -125,7 +125,7 @@ class Sdl3FontRasterizerBackend implements FontRasterizerBackend {
 
       // Render single character as text string
       final charStr = String.fromCharCode(charCode);
-      final surface = ttfRenderTextBlended(font, charStr, 0, fg.ref);
+      final surface = ttfRenderTextBlended(font, charStr, fg.ref);
 
       final cellX = colIdx * cellWidth;
       final cellY = rowIdx * cellHeight;

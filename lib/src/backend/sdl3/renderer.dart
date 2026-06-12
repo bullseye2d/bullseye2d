@@ -36,21 +36,19 @@ class Sdl3RendererBackend implements RendererBackend {
 
   // Projection matrix (orthographic) — applied CPU-side since SDL_Renderer has no shaders
   // Initialized to identity
-  Float32List _projMatrix = Float32List(16)
-    ..[0] = 1.0
-    ..[5] = 1.0
-    ..[10] = 1.0
-    ..[15] = 1.0;
+  Float32List _projMatrix =
+      Float32List(16)
+        ..[0] = 1.0
+        ..[5] = 1.0
+        ..[10] = 1.0
+        ..[15] = 1.0;
   int _viewportW = 0;
   int _viewportH = 0;
 
   // Lookup table for uint8 → float color conversion
-  static final Float64List _u8ToFloat = Float64List.fromList(
-    List.generate(256, (i) => i / 255.0),
-  );
+  static final Float64List _u8ToFloat = Float64List.fromList(List.generate(256, (i) => i / 255.0));
 
-  Sdl3RendererBackend(this._window, {int batchCapacityInBytes = 65536})
-      : _batchCapacityInBytes = batchCapacityInBytes;
+  Sdl3RendererBackend(this._window, {int batchCapacityInBytes = 65536}) : _batchCapacityInBytes = batchCapacityInBytes;
 
   @override
   void init() {
@@ -143,7 +141,9 @@ class Sdl3RendererBackend implements RendererBackend {
   void setLineWidth(double w) {
     if (w != 1.0 && !_lineWidthWarned) {
       _lineWidthWarned = true;
-      print('[bullseye2d] Warning: setLineWidth() is not supported on SDL3 (Dart bindings lack SDL_SetRenderDrawLineWidth)');
+      print(
+        '[bullseye2d] Warning: setLineWidth() is not supported on SDL3 (Dart bindings lack SDL_SetRenderDrawLineWidth)',
+      );
     }
   }
 
@@ -359,7 +359,13 @@ class Sdl3RendererBackend implements RendererBackend {
     final byteData = vertices.buffer.asByteData();
     for (int i = 0; i + 1 < vertexCount; i += 2) {
       _setDrawColorFromVertex(byteData, i);
-      sdlRenderLine(renderer, vertices[i * fpv], vertices[i * fpv + 1], vertices[(i + 1) * fpv], vertices[(i + 1) * fpv + 1]);
+      sdlRenderLine(
+        renderer,
+        vertices[i * fpv],
+        vertices[i * fpv + 1],
+        vertices[(i + 1) * fpv],
+        vertices[(i + 1) * fpv + 1],
+      );
     }
   }
 
@@ -372,7 +378,13 @@ class Sdl3RendererBackend implements RendererBackend {
     final byteData = vertices.buffer.asByteData();
     for (int i = 0; i + 1 < vertexCount; i++) {
       _setDrawColorFromVertex(byteData, i);
-      sdlRenderLine(renderer, vertices[i * fpv], vertices[i * fpv + 1], vertices[(i + 1) * fpv], vertices[(i + 1) * fpv + 1]);
+      sdlRenderLine(
+        renderer,
+        vertices[i * fpv],
+        vertices[i * fpv + 1],
+        vertices[(i + 1) * fpv],
+        vertices[(i + 1) * fpv + 1],
+      );
     }
   }
 

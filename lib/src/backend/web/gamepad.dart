@@ -38,10 +38,11 @@ class WebGamepadBackend implements GamepadBackend {
       var gamepad = _gamepads[index];
       if (gamepad == null) continue;
 
-      _xAxis[i][0] = (gamepad.axes.length > 0) ? gamepad.axes[0].toDartDouble : 0.0;
-      _yAxis[i][0] = (gamepad.axes.length > 1) ? gamepad.axes[1].toDartDouble : 0.0;
-      _xAxis[i][1] = (gamepad.axes.length > 2) ? gamepad.axes[2].toDartDouble : 0.0;
-      _yAxis[i][1] = (gamepad.axes.length > 3) ? gamepad.axes[3].toDartDouble : 0.0;
+      final axisCount = gamepad.axes.length;
+      _xAxis[i][0] = (axisCount > 0) ? gamepad.axes[0].toDartDouble : 0.0;
+      _yAxis[i][0] = (axisCount > 1) ? gamepad.axes[1].toDartDouble : 0.0;
+      _xAxis[i][1] = (axisCount > 2) ? gamepad.axes[2].toDartDouble : 0.0;
+      _yAxis[i][1] = (axisCount > 3) ? gamepad.axes[3].toDartDouble : 0.0;
 
       _trigger[i][0] = (gamepad.buttons.length > 6) ? gamepad.buttons[6].value : 0.0;
       _trigger[i][1] = (gamepad.buttons.length > 7) ? gamepad.buttons[7].value : 0.0;

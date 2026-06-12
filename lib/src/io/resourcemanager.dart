@@ -1,5 +1,6 @@
 import 'package:bullseye2d/bullseye2d.dart';
-import 'package:bullseye2d/src/backend/backend.dart' show RendererBackend, FileBackend, ImageLoaderBackend, FontRasterizerBackend;
+import 'package:bullseye2d/src/backend/backend.dart'
+    show RendererBackend, FileBackend, ImageLoaderBackend, FontRasterizerBackend;
 import 'dart:collection';
 
 /// {@category IO}
@@ -18,7 +19,14 @@ class ResourceManager {
   final _fontCache = HashMap<int, BitmapFont>();
 
   /// @nodoc
-  ResourceManager(this._renderer, this._imageLoader, this._fileLoader, this._fontRasterizer, this._audio, this._loadingInfo);
+  ResourceManager(
+    this._renderer,
+    this._imageLoader,
+    this._fileLoader,
+    this._fontRasterizer,
+    this._audio,
+    this._loadingInfo,
+  );
 
   /// Loads a [Texture] from the given [path].
   ///
@@ -143,15 +151,18 @@ class ResourceManager {
       _fontCache[hash] = font;
       var loadingState = _loadingInfo.add(path);
 
-      _fileLoader.loadBytes(path).then((bytes) {
-        _fontRasterizer.rasterize(bytes, size, containedAsciiCharacters, antiAlias).then((rasterized) {
-          font.generateAtlasFromRasterized(rasterized, antiAlias);
-          loadingState.completedOrFailed = true;
-        });
-      }).catchError((e) {
-        warn("Error loading font: $path", e);
-        loadingState.completedOrFailed = true;
-      });
+      _fileLoader
+          .loadBytes(path)
+          .then((bytes) {
+            _fontRasterizer.rasterize(bytes, size, containedAsciiCharacters, antiAlias).then((rasterized) {
+              font.generateAtlasFromRasterized(rasterized, antiAlias);
+              loadingState.completedOrFailed = true;
+            });
+          })
+          .catchError((e) {
+            warn("Error loading font: $path", e);
+            loadingState.completedOrFailed = true;
+          });
     }
 
     return font;
