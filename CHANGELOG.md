@@ -1,3 +1,8 @@
+## 2.0.4
+
+- Dart Formatting fixed
+- SDL3 API Updates
+
 ## 2.0.3
 
 - Use webdev as a project-level dev dependency instead of requiring global activation
